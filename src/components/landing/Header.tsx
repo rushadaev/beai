@@ -53,7 +53,7 @@ export default function Header() {
             </Link>
             
             {/* Auth Button Area with consistent width */}
-            <div className="w-24 h-9 flex justify-center items-center">
+            <div className="w-48 h-9 flex justify-center items-center">
               {loading ? (
                 <div className="h-2 w-16 bg-gray-700 rounded animate-pulse"></div>
               ) : (
