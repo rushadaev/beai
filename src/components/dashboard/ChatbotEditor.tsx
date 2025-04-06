@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from 'react';
 import SuggestionQuestions from './editor/SuggestionQuestions';
 import Appearance from './editor/Appearance';
 import Rules from './editor/Rules';
+import Agent, { AgentConfig } from './editor/Agent';
 
 export interface AppearanceSettings {
   headerText: string;
@@ -43,10 +44,12 @@ export interface ChatbotEditorProps {
     appearance?: AppearanceSettings;
     rules?: Rule[];
     suggestions?: Question[];
+    agent?: AgentConfig;
   };
   onUpdateAppearance?: (settings: AppearanceSettings) => void;
   onUpdateRules?: (rules: Rule[]) => void;
   onUpdateSuggestions?: (questions: Question[]) => void;
+  onUpdateAgent?: (config: AgentConfig) => void;
   isSaving?: boolean;
 }
 
@@ -209,10 +212,12 @@ const ChatbotPreview = memo(function ChatbotPreview({
 });
 
 export default function ChatbotEditor({
+  chatbotId,
   initialSettings = {},
   onUpdateAppearance,
   onUpdateRules,
   onUpdateSuggestions,
+  onUpdateAgent,
   isSaving = false
 }: ChatbotEditorProps) {
   const [activeTab, setActiveTab] = useState('appearance');
@@ -255,6 +260,10 @@ export default function ChatbotEditor({
     ]
   );
   
+  const [agentConfig, setAgentConfig] = useState<AgentConfig | undefined>(
+    initialSettings.agent
+  );
+  
   // Update settings when initialSettings change
   useEffect(() => {
     if (initialSettings.appearance) {
@@ -266,12 +275,16 @@ export default function ChatbotEditor({
     if (initialSettings.suggestions) {
       setQuestions(initialSettings.suggestions);
     }
+    if (initialSettings.agent) {
+      setAgentConfig(initialSettings.agent);
+    }
   }, [initialSettings]);
   
   const tabs: EditorTab[] = [
     { id: 'appearance', label: 'Appearance' },
     { id: 'rules', label: 'Rules' },
-    { id: 'suggestions', label: 'Suggestions' }
+    { id: 'suggestions', label: 'Suggestions' },
+    { id: 'agent', label: 'Agent' }
   ];
   
   const handleSendMessage = (e: React.FormEvent) => {
@@ -349,6 +362,17 @@ export default function ChatbotEditor({
   const handleQuestionsPreview = (updatedQuestions: Question[]) => {
     setQuestions(updatedQuestions);
   };
+  
+  const handleAgentUpdate = (config: AgentConfig) => {
+    setAgentConfig(config);
+    if (onUpdateAgent) {
+      onUpdateAgent(config);
+    }
+  };
+  
+  const handleAgentPreview = (config: AgentConfig) => {
+    setAgentConfig(config);
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
@@ -396,6 +420,16 @@ export default function ChatbotEditor({
               initialQuestions={questions} 
               onUpdate={handleQuestionsUpdate}
               onPreviewUpdate={handleQuestionsPreview}
+              isSaving={isSaving}
+            />
+          )}
+          
+          {activeTab === 'agent' && (
+            <Agent
+              chatbotId={chatbotId}
+              initialConfig={agentConfig}
+              onUpdate={handleAgentUpdate}
+              onPreviewUpdate={handleAgentPreview}
               isSaving={isSaving}
             />
           )}

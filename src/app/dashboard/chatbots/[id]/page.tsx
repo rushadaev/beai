@@ -9,6 +9,7 @@ import InstallModal from '@/components/dashboard/InstallModal';
 import { getChatbot, updateChatbot, updateChatbotSettings } from '@/lib/firebase/firestore';
 import Link from 'next/link';
 import { AppearanceSettings, Rule, Question } from '@/components/dashboard/ChatbotEditor';
+import { AgentConfig } from '@/components/dashboard/editor/Agent';
 
 export default function ChatbotPage() {
   const { user, loading: authLoading } = useAuth();
@@ -24,6 +25,7 @@ export default function ChatbotPage() {
       appearance?: AppearanceSettings;
       rules?: Rule[];
       suggestions?: Question[];
+      agent?: AgentConfig;
       [key: string]: unknown;
     };
     createdAt?: Date;
@@ -76,8 +78,8 @@ export default function ChatbotPage() {
   
   // Handle settings update from any editor tab
   const handleSettingsUpdate = async (
-    settingType: 'appearance' | 'rules' | 'suggestions', 
-    settings: AppearanceSettings | Rule[] | Question[]
+    settingType: 'appearance' | 'rules' | 'suggestions' | 'agent', 
+    settings: AppearanceSettings | Rule[] | Question[] | AgentConfig
   ) => {
     if (!chatbotId || !user?.uid || !chatbot) return;
     
@@ -208,6 +210,7 @@ export default function ChatbotPage() {
               onUpdateAppearance={(settings) => handleSettingsUpdate('appearance', settings)}
               onUpdateRules={(settings) => handleSettingsUpdate('rules', settings)}
               onUpdateSuggestions={(settings) => handleSettingsUpdate('suggestions', settings)}
+              onUpdateAgent={(config) => handleSettingsUpdate('agent', config)}
               isSaving={isSaving}
             />
             
