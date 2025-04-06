@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import SuggestionQuestions from './editor/SuggestionQuestions';
 import Appearance from './editor/Appearance';
 import Rules from './editor/Rules';
@@ -75,6 +75,15 @@ const ChatbotPreview = memo(function ChatbotPreview({
   formatTime: (date: Date) => string;
   resetChat: () => void;
 }) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping]);
+
   return (
     <div className="w-full md:w-1/2">
       <div className="sticky top-4">
@@ -160,6 +169,9 @@ const ChatbotPreview = memo(function ChatbotPreview({
                   </div>
                 </div>
               )}
+              
+              {/* Invisible element at the end to scroll to */}
+              <div ref={messagesEndRef} />
             </div>
             
             {/* Suggestion questions */}
@@ -266,6 +278,8 @@ export default function ChatbotEditor({
   
   const [agentConfigSaved, setAgentConfigSaved] = useState(false);
   
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  
   // Update settings when initialSettings change
   useEffect(() => {
     if (initialSettings.appearance) {
@@ -309,7 +323,7 @@ export default function ChatbotEditor({
     // Use agent API if on agent tab and agent is configured and saved
     if (activeTab === 'agent' && agentConfig && agentConfigSaved && chatbotId) {
       try {
-        const response = await fetch('http://localhost:8000/api/message', {
+        const response = await fetch(`${apiBaseUrl}/api/message`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
