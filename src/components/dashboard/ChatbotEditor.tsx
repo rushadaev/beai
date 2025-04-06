@@ -264,6 +264,8 @@ export default function ChatbotEditor({
     initialSettings.agent
   );
   
+  const [agentConfigSaved, setAgentConfigSaved] = useState(false);
+  
   // Update settings when initialSettings change
   useEffect(() => {
     if (initialSettings.appearance) {
@@ -277,6 +279,7 @@ export default function ChatbotEditor({
     }
     if (initialSettings.agent) {
       setAgentConfig(initialSettings.agent);
+      setAgentConfigSaved(true);
     }
   }, [initialSettings]);
   
@@ -287,7 +290,7 @@ export default function ChatbotEditor({
     { id: 'agent', label: 'Agent' }
   ];
   
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
     
@@ -300,20 +303,64 @@ export default function ChatbotEditor({
     setMessages([...messages, userMessage]);
     setInputText('');
     
-    // Simulate bot typing
+    // Set typing state immediately
     setIsTyping(true);
     
-    // Simulate bot response after a delay
-    setTimeout(() => {
-      const botMessage = {
-        text: `I received your message: "${inputText}". This is a simulated response.`,
-        sender: 'bot' as const,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1500);
+    // Use agent API if on agent tab and agent is configured and saved
+    if (activeTab === 'agent' && agentConfig && agentConfigSaved && chatbotId) {
+      try {
+        const response = await fetch('http://localhost:8000/api/message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agent_id: chatbotId,
+            message: userMessage.text,
+            stream: false
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Agent API request failed');
+        }
+        
+        const data = await response.json();
+        
+        const botMessage = {
+          text: data.response,
+          sender: 'bot' as const,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+      } catch (error) {
+        console.error('Error calling agent API:', error);
+        
+        // Fallback to a generic error message
+        const botMessage = {
+          text: 'Sorry, I encountered an error processing your request.',
+          sender: 'bot' as const,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+      } finally {
+        setIsTyping(false);
+      }
+    } else {
+      // Use simulated response for other tabs
+      setTimeout(() => {
+        const botMessage = {
+          text: `I received your message: "${inputText}". This is a simulated response.`,
+          sender: 'bot' as const,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+      }, 1500);
+    }
   };
   
   const formatTime = (date: Date) => {
@@ -368,10 +415,18 @@ export default function ChatbotEditor({
     if (onUpdateAgent) {
       onUpdateAgent(config);
     }
+    // Mark the agent as not yet saved when updating
+    setAgentConfigSaved(false);
   };
   
   const handleAgentPreview = (config: AgentConfig) => {
+    // Only update the config, don't reset saved state or trigger any side effects
     setAgentConfig(config);
+  };
+
+  // This function is called when agent saves successfully
+  const handleAgentSaved = () => {
+    setAgentConfigSaved(true);
   };
 
   return (
@@ -430,6 +485,7 @@ export default function ChatbotEditor({
               initialConfig={agentConfig}
               onUpdate={handleAgentUpdate}
               onPreviewUpdate={handleAgentPreview}
+              onSaved={handleAgentSaved}
               isSaving={isSaving}
             />
           )}

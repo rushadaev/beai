@@ -48,6 +48,7 @@ interface AgentProps {
   initialConfig?: AgentConfig;
   onUpdate?: (config: AgentConfig) => void;
   onPreviewUpdate?: (config: AgentConfig) => void;
+  onSaved?: () => void;
   isSaving?: boolean;
   chatbotId?: string;
 }
@@ -81,6 +82,7 @@ export default function Agent({
   initialConfig, 
   onUpdate, 
   onPreviewUpdate,
+  onSaved,
   isSaving = false,
   chatbotId
 }: AgentProps) {
@@ -89,16 +91,33 @@ export default function Agent({
   const [testMessage, setTestMessage] = useState("");
   const [testResponse, setTestResponse] = useState("");
   const [isTesting, setIsTesting] = useState(false);
+  const [configSaved, setConfigSaved] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   
   useEffect(() => {
-    if (initialConfig) {
+    if (initialConfig && initialLoad) {
       setConfig(initialConfig);
       setActiveAgent(initialConfig.agents[0]?.id || "");
+      // If we have an initial config from the server, it's already saved
+      setConfigSaved(true);
+      setHasUnsavedChanges(false);
+      setInitialLoad(false);
     }
-  }, [initialConfig]);
+  }, [initialConfig, initialLoad]);
 
   const handleConfigChange = (newConfig: AgentConfig) => {
+    // Keep the current activeAgent if it still exists in the new config
+    const agentStillExists = newConfig.agents.some(agent => agent.id === activeAgent);
+    
     setConfig(newConfig);
+    setHasUnsavedChanges(true);
+    
+    // Only set a new activeAgent if the current one doesn't exist anymore
+    if (!agentStillExists && newConfig.agents.length > 0) {
+      setActiveAgent(newConfig.agents[0].id);
+    }
+    
     if (onPreviewUpdate) {
       onPreviewUpdate(newConfig);
     }
@@ -184,12 +203,14 @@ export default function Agent({
       handoffs: []
     };
     
+    // First set the active agent to avoid race conditions
+    setActiveAgent(newAgentId);
+    
+    // Then update the config
     handleConfigChange({
       ...config,
       agents: [...config.agents, newAgent]
     });
-    
-    setActiveAgent(newAgentId);
   };
 
   const updateAgent = (agentId: string, updates: Partial<AgentDefinition>) => {
@@ -251,6 +272,15 @@ export default function Agent({
         
         if (!response.ok) {
           throw new Error('Failed to register agent');
+        }
+        
+        // Mark configuration as saved
+        setConfigSaved(true);
+        setHasUnsavedChanges(false);
+        
+        // Call onSaved callback if provided
+        if (onSaved) {
+          onSaved();
         }
       }
     } catch (error) {
@@ -567,6 +597,18 @@ export default function Agent({
         <div className="space-y-4 rounded-md border border-border p-4">
           <h3 className="font-medium text-primary">Test Agent</h3>
           
+          {!configSaved && (
+            <div className="mb-3 rounded-md bg-accent/10 p-2 text-sm text-primary border border-accent/30">
+              <span className="font-medium">Note:</span> You must save your agent configuration before testing.
+            </div>
+          )}
+          
+          {hasUnsavedChanges && configSaved && (
+            <div className="mb-3 rounded-md bg-yellow-500/10 p-2 text-sm text-yellow-400 border border-yellow-500/30">
+              <span className="font-medium">Warning:</span> You have unsaved changes. Save your configuration to test with the latest changes.
+            </div>
+          )}
+          
           <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-secondary mb-1">
@@ -582,8 +624,9 @@ export default function Agent({
                 />
                 <button
                   onClick={testAgent}
-                  disabled={isTesting || !testMessage.trim() || !chatbotId}
+                  disabled={isTesting || !testMessage.trim() || !chatbotId || !configSaved}
                   className="rounded bg-accent px-3 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
+                  title={!configSaved ? "Save configuration first" : ""}
                 >
                   {isTesting ? 'Testing...' : 'Test'}
                 </button>
@@ -607,9 +650,11 @@ export default function Agent({
           <button
             onClick={saveConfig}
             disabled={isSaving}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
+            className={`rounded px-4 py-2 text-sm font-medium text-dark hover:opacity-90 disabled:opacity-50 ${
+              hasUnsavedChanges ? "bg-accent" : "bg-green-500"
+            }`}
           >
-            {isSaving ? 'Saving...' : 'Save Configuration'}
+            {isSaving ? 'Saving...' : hasUnsavedChanges ? 'Save Configuration' : 'Configuration Saved'}
           </button>
         </div>
       </div>
