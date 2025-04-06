@@ -42,7 +42,7 @@ export default function Faq() {
       exchanges: [
         {
           user: "I don't know how to code. Can I still build a useful agent?",
-          agent: "Definitely! BeAI is designed specifically for non-technical users. The drag-and-drop interface lets you build sophisticated agents without writing a single line of code."
+          agent: "Definitely! VibeCraft is designed specifically for non-technical users. The drag-and-drop interface lets you build sophisticated agents without writing a single line of code."
         },
         {
           user: "How do I test if my agent is working correctly?",

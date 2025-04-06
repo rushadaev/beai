@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BeAI - AI Agent Generator",
+  title: "VibeCraft - AI Agent Generator",
   description: "Create custom AI agents for your website or Telegram bot",
 };
 

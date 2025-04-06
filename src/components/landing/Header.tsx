@@ -38,7 +38,7 @@ export default function Header() {
         <div className="flex items-center justify-between px-6">
           <div className="flex items-center">
             <span className="text-2xl font-bold text-primary">
-              <span className="text-accent">Be</span>AI
+              <span className="text-accent">Vibe</span>Craft
             </span>
           </div>
           <nav className="flex items-center space-x-6">
