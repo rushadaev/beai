@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, memo, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import SuggestionQuestions from './editor/SuggestionQuestions';
 import Appearance from './editor/Appearance';
 import Rules from './editor/Rules';
 import Agent, { AgentConfig } from './editor/Agent';
+import ChatWidget from '../widgets/ChatWidget';
 
 export interface AppearanceSettings {
   headerText: string;
@@ -53,176 +54,6 @@ export interface ChatbotEditorProps {
   isSaving?: boolean;
 }
 
-// Create a memoized preview component
-const ChatbotPreview = memo(function ChatbotPreview({
-  appearanceSettings,
-  messages,
-  questions,
-  isTyping,
-  inputText,
-  setInputText,
-  handleSendMessage,
-  formatTime,
-  resetChat
-}: {
-  appearanceSettings: AppearanceSettings;
-  messages: Message[];
-  questions: Question[];
-  isTyping: boolean;
-  inputText: string;
-  setInputText: (text: string) => void;
-  handleSendMessage: (e: React.FormEvent) => void;
-  formatTime: (date: Date) => string;
-  resetChat: () => void;
-}) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isTyping]);
-
-  return (
-    <div className="w-full md:w-1/2">
-      <div className="sticky top-4">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-primary">Live Preview</h2>
-          <button
-            onClick={resetChat}
-            className="text-sm text-secondary hover:text-primary"
-          >
-            Reset Chat
-          </button>
-        </div>
-        
-        <div
-          className={`rounded-lg border border-border overflow-hidden shadow-sm ${
-            appearanceSettings.size === 'small'
-              ? 'max-w-xs'
-              : appearanceSettings.size === 'medium'
-              ? 'max-w-sm'
-              : 'max-w-md'
-          } ${
-            appearanceSettings.placement === 'left'
-              ? 'mr-auto'
-              : appearanceSettings.placement === 'right'
-              ? 'ml-auto'
-              : 'mx-auto'
-          }`}
-          style={{ maxHeight: '600px' }}
-        >
-          {/* Chat header */}
-          <div
-            className="p-3 text-white"
-            style={{
-              background: `linear-gradient(to right, ${appearanceSettings.primaryColor}, ${appearanceSettings.secondaryColor})`
-            }}
-          >
-            <h3 className="font-medium">{appearanceSettings.headerText}</h3>
-          </div>
-          
-          {/* Chat messages */}
-          <div className="flex h-96 flex-col bg-card overflow-y-auto p-3">
-            <div className="flex-1 space-y-3">
-              {messages.map((message, i) => (
-                <div
-                  key={i}
-                  className={`flex ${
-                    message.sender === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                      message.sender === 'user'
-                        ? 'bg-accent text-dark'
-                        : 'bg-dark text-primary'
-                    }`}
-                    style={{
-                      backgroundColor:
-                        message.sender === 'user'
-                          ? appearanceSettings.buttonColor
-                          : undefined,
-                      color:
-                        message.sender === 'user'
-                          ? appearanceSettings.buttonTextColor
-                          : undefined
-                    }}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <p className="mt-1 text-xs opacity-70">
-                      {formatTime(message.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-lg bg-dark px-3 py-2 text-primary">
-                    <div className="flex space-x-1">
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-primary"></div>
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Invisible element at the end to scroll to */}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Suggestion questions */}
-            {questions.length > 0 && (
-              <div className="mt-4 space-x-2 space-y-2">
-                {questions.map((question) => (
-                  <button
-                    key={question.id}
-                    onClick={() => {
-                      setInputText(question.text);
-                      const input = document.getElementById('chatInput') as HTMLInputElement;
-                      if (input) input.focus();
-                    }}
-                    className="inline-block rounded-full border border-border px-3 py-1 text-xs text-secondary hover:bg-dark"
-                  >
-                    {question.text}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          {/* Chat input */}
-          <div className="border-t border-border bg-card p-3">
-            <form onSubmit={handleSendMessage} className="flex space-x-2">
-              <input
-                id="chatInput"
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="rounded-md px-3 py-2 text-white"
-                style={{
-                  backgroundColor: appearanceSettings.buttonColor,
-                  color: appearanceSettings.buttonTextColor
-                }}
-              >
-                Send
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
 export default function ChatbotEditor({
   chatbotId,
   initialSettings = {},
@@ -233,15 +64,6 @@ export default function ChatbotEditor({
   isSaving = false
 }: ChatbotEditorProps) {
   const [activeTab, setActiveTab] = useState('agent');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      text: 'Hello! How can I help you today?',
-      sender: 'bot',
-      timestamp: new Date()
-    }
-  ]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   
   // Default settings if not provided
   const [appearanceSettings, setAppearanceSettings] = useState<AppearanceSettings>(
@@ -278,8 +100,6 @@ export default function ChatbotEditor({
   
   const [agentConfigSaved, setAgentConfigSaved] = useState(false);
   
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  
   // Update settings when initialSettings change
   useEffect(() => {
     if (initialSettings.appearance) {
@@ -304,91 +124,19 @@ export default function ChatbotEditor({
     { id: 'suggestions', label: 'Suggestions' }
   ];
   
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+  const handlePreviewMessage = async (message: string): Promise<string> => {
+    // Simulate a delayed response
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const userMessage = {
-      text: inputText,
-      sender: 'user' as const,
-      timestamp: new Date()
-    };
-    
-    setMessages([...messages, userMessage]);
-    setInputText('');
-    
-    // Set typing state immediately
-    setIsTyping(true);
-    
-    // Use agent API if on agent tab and agent is configured and saved
+    // If on agent tab and agent is configured and saved, we'd use the real endpoint
+    // but for simplicity we're using the same simulated response
     if (activeTab === 'agent' && agentConfig && agentConfigSaved && chatbotId) {
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/message`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            agent_id: chatbotId,
-            message: userMessage.text,
-            stream: false
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Agent API request failed');
-        }
-        
-        const data = await response.json();
-        
-        const botMessage = {
-          text: data.response,
-          sender: 'bot' as const,
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-      } catch (error) {
-        console.error('Error calling agent API:', error);
-        
-        // Fallback to a generic error message
-        const botMessage = {
-          text: 'Sorry, I encountered an error processing your request.',
-          sender: 'bot' as const,
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-      } finally {
-        setIsTyping(false);
-      }
+      // In a real implementation, we would call the actual API endpoint here
+      // For now we'll use the simulated response
+      return `This is a simulated response from your saved agent. In a live setting, this would call the real API.`;
     } else {
-      // Use simulated response for other tabs
-      setTimeout(() => {
-        const botMessage = {
-          text: `I received your message: "${inputText}". This is a simulated response. Make sure you saved your agent before sending a message to get a real response.`,
-          sender: 'bot' as const,
-          timestamp: new Date()
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 1500);
+      return `I received your message: "${message}". This is a simulated response. Make sure you saved your agent before sending a message to get a real response.`;
     }
-  };
-  
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-  
-  const resetChat = () => {
-    setMessages([
-      {
-        text: 'Hello! How can I help you today?',
-        sender: 'bot',
-        timestamp: new Date()
-      }
-    ]);
   };
   
   const handleAppearanceUpdate = (settings: AppearanceSettings) => {
@@ -506,18 +254,20 @@ export default function ChatbotEditor({
         </div>
       </div>
       
-      {/* Use the memoized preview component */}
-      <ChatbotPreview
-        appearanceSettings={appearanceSettings}
-        messages={messages}
-        questions={questions}
-        isTyping={isTyping}
-        inputText={inputText}
-        setInputText={setInputText}
-        handleSendMessage={handleSendMessage}
-        formatTime={formatTime}
-        resetChat={resetChat}
-      />
+      {/* Preview section */}
+      <div className="w-full md:w-1/2">
+        <div className="sticky top-4">
+          <h2 className="text-lg font-medium text-primary mb-2">Live Preview</h2>
+          
+          <ChatWidget 
+            chatbotId={chatbotId || ''}
+            appearance={appearanceSettings}
+            questions={questions}
+            isPreview={true}
+            onPreviewMessage={handlePreviewMessage}
+          />
+        </div>
+      </div>
     </div>
   );
 } 

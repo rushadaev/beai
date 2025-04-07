@@ -10,13 +10,14 @@ export default function InstallModal({ chatbotId }: InstallModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  // Generate installation code
+  // Generate installation code with proper URL
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const installCode = `<script>
   (function(w,d,s,o,f,js,fjs){
     w['BeAIChatWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
     w[o].l=1*new Date();js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
     js.async=1;js.src=f;fjs.parentNode.insertBefore(js,fjs);
-  })(window,document,'script','beai','https://cdn.beai.com/widget.js');
+  })(window,document,'script','beai','${baseUrl}/widget.js');
   beai('init', '${chatbotId}');
 </script>`;
 
@@ -91,11 +92,11 @@ export default function InstallModal({ chatbotId }: InstallModalProps) {
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-green-400">✓</span>
-              <span>Automatically inherits your site theme and styling</span>
+              <span>Real-time conversation with your AI agent</span>
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-green-400">✓</span>
-              <span>Customizable position, colors, and size</span>
+              <span>All your configured appearance settings and tools are applied</span>
             </li>
           </ul>
         </div>

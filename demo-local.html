@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeAI Local Chatbot Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .content {
+            margin-top: 40px;
+        }
+        p {
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BeAI Local Chatbot Widget Demo</h1>
+    
+    <div class="content">
+        <p>This is a demonstration page for the BeAI Chatbot Widget using your local widget.js file.</p>
+        
+        <p>Try interacting with the widget to test its functionality. If you don't see the widget, check the browser console for any errors.</p>
+        
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nunc id aliquam tincidunt, nisl nunc tincidunt nisl, vitae aliquam nisl nunc vitae nisl. Nullam auctor, nunc id aliquam tincidunt, nisl nunc tincidunt nisl, vitae aliquam nisl nunc vitae nisl.</p>
+        
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nunc id aliquam tincidunt, nisl nunc tincidunt nisl, vitae aliquam nisl nunc vitae nisl. Nullam auctor, nunc id aliquam tincidunt, nisl nunc tincidunt nisl, vitae aliquam nisl nunc vitae nisl.</p>
+    </div>
+    
+    <!-- BeAI Chatbot Widget (Local Version) -->
+    <script>
+        (function(w,d,s,o,f,js,fjs){
+          w['BeAIChatWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
+          w[o].l=1*new Date();js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
+          js.async=1;js.src=f;fjs.parentNode.insertBefore(js,fjs);
+        })(window,document,'script','beai','http://localhost:3000/widget.js');
+        beai('init', '1Xc11GyMvhtCW8F6dhNk');
+      </script>
+    <!-- End BeAI Chatbot Widget -->
+</body>
+</html> 
