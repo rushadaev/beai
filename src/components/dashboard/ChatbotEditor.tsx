@@ -263,7 +263,7 @@ export default function ChatbotEditor({
             chatbotId={chatbotId || ''}
             appearance={appearanceSettings}
             questions={questions}
-            isPreview={true}
+            isPreview={false}
             onPreviewMessage={handlePreviewMessage}
           />
         </div>
