@@ -399,7 +399,7 @@
       inputContainer.className = 'beai-input-container';
       inputContainer.innerHTML = `
         <input type="text" class="beai-input-field" placeholder="Type your message...">
-        <button class="beai-send-button" style="background-color: ${this.configs.appearance.buttonColor}; color: ${this.configs.appearance.buttonTextColor}">Send</button>
+        <button class="beai-send-button" style="background-color: ${this.configs.appearance.buttonColor}; color: ${this.configs.appearance.buttonTextColor}; padding: 10px 15px; margin-left: 5px;">Send</button>
       `;
       this.chatWindow.appendChild(inputContainer);
       
