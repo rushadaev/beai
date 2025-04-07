@@ -29,5 +29,16 @@ service cloud.firestore {
       // Allow delete if user is authenticated and is the owner
       allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
+    
+    // Chat History - users can read messages related to their chatbots
+    match /chat_history/{messageId} {
+      // Allow read if user is authenticated and the agent_id belongs to one of their chatbots
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/chatbots/$(resource.data.agent_id)).data.userId == request.auth.uid;
+      
+      // Disallow write/update/delete from client-side for now
+      // Writes should ideally happen from a trusted backend/serverless function
+      allow create, update, delete: if false;
+    }
   }
 }
