@@ -1,0 +1,21 @@
+import { NextResponse } from 'next/server';
+
+export async function GET(request: Request) {
+  // Get query parameters
+  const { searchParams } = new URL(request.url);
+  const chatbotId = searchParams.get('chatbotId');
+
+  if (!chatbotId) {
+    return NextResponse.json({ error: 'Missing chatbotId parameter' }, { status: 400 });
+  }
+
+  // Get API URL from environment variable
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8234';
+
+  // Return widget configuration including API URL
+  return NextResponse.json({
+    chatbotId,
+    apiUrl,
+    version: '1.0.0'
+  });
+} 

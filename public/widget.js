@@ -19,8 +19,8 @@
       // Store the configuration
       configs.chatbotId = chatbotId;
       
-      // Load chatbot config
-      fetchChatbotConfig(chatbotId);
+      // First get the API URL and then load chatbot config
+      fetchWidgetConfig(chatbotId);
     } else {
       // Add to command queue to process later
       queue.push(args);
@@ -34,10 +34,37 @@
     }
   }
   
+  // Fetch widget configuration including API URL
+  async function fetchWidgetConfig(chatbotId) {
+    try {
+      // First get widget config from our app which includes the API URL
+      const scriptUrl = new URL(document.currentScript.src);
+      const baseUrl = `${scriptUrl.protocol}//${scriptUrl.host}`;
+      const response = await fetch(`${baseUrl}/api/widget-config?chatbotId=${chatbotId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch widget configuration');
+      }
+      
+      const widgetConfig = await response.json();
+      
+      // Set the API URL globally
+      window.BEAI_API_URL = widgetConfig.apiUrl;
+      
+      // Now fetch the chatbot config from the API
+      fetchChatbotConfig(chatbotId);
+    } catch (error) {
+      console.error('Error fetching widget configuration:', error);
+      // Fallback to default URL
+      window.BEAI_API_URL = 'http://localhost:8000';
+      fetchChatbotConfig(chatbotId);
+    }
+  }
+  
   // Fetch chatbot configuration
   async function fetchChatbotConfig(chatbotId) {
     try {
-      const apiUrl = window.BEAI_API_URL || 'http://localhost:8000';
+      const apiUrl = window.BEAI_API_URL;
       const response = await fetch(`${apiUrl}/api/agents/${chatbotId}`);
       
       if (!response.ok) {
@@ -454,7 +481,7 @@
       
       try {
         // Send message to API
-        const apiUrl = window.BEAI_API_URL || 'http://localhost:8000';
+        const apiUrl = window.BEAI_API_URL;
         const response = await fetch(`${apiUrl}/api/message`, {
           method: 'POST',
           headers: {
