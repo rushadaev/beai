@@ -1,24 +1,43 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSafeTranslation } from '@/components/I18nProvider';
+
+// Assuming ChatAppearance is defined/imported
+// Example definition if not imported:
+interface ChatAppearance {
+  headerText: string;
+  primaryColor: string;
+  secondaryColor: string;
+  buttonColor: string;
+  buttonTextColor: string;
+  placement: string;
+  size: string;
+}
 
 interface InstallModalProps {
   chatbotId: string;
+  appearance: ChatAppearance; // Added appearance prop
 }
 
-export default function InstallModal({ chatbotId }: InstallModalProps) {
+export default function InstallModal({ chatbotId, appearance }: InstallModalProps) {
+  const { t } = useSafeTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  // Generate installation code with proper URL
+  // Generate installation code with proper URL and appearance config
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appearanceJson = JSON.stringify(appearance);
+  
+  // Note: Escaping JSON for inclusion in a script tag within a string literal can be tricky.
+  // Using JSON.stringify and embedding directly is usually safe for simple objects.
   const installCode = `<script>
   (function(w,d,s,o,f,js,fjs){
     w['BeAIChatWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
     w[o].l=1*new Date();js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
     js.async=1;js.src=f;fjs.parentNode.insertBefore(js,fjs);
   })(window,document,'script','beai','${baseUrl}/widget.js');
-  beai('init', '${chatbotId}');
+  beai('init', '${chatbotId}', ${appearanceJson}); // Pass appearance as 3rd arg
 </script>`;
 
   useEffect(() => {
@@ -58,9 +77,9 @@ export default function InstallModal({ chatbotId }: InstallModalProps) {
         </button>
         
         <div className="mb-6">
-          <h3 className="text-xl font-medium text-primary">Install Your Chatbot</h3>
+          <h3 className="text-xl font-medium text-primary">{t('dashboard.installModal.title')}</h3>
           <p className="mt-1 text-sm text-secondary">
-            Copy the code below and paste it into your website to install the chatbot.
+            {t('dashboard.installModal.description')}
           </p>
         </div>
         
@@ -75,28 +94,28 @@ export default function InstallModal({ chatbotId }: InstallModalProps) {
               onClick={handleCopyCode}
               className="absolute right-2 top-2 rounded-md bg-dark/80 px-2 py-1 text-xs text-secondary hover:text-primary"
             >
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? t('dashboard.installModal.copiedButton') : t('dashboard.installModal.copyButton')}
             </button>
           </div>
           <p className="mt-2 text-xs text-secondary">
-            Add this code to the &lt;head&gt; or &lt;body&gt; section of your website.
+            {t('dashboard.installModal.codePlacementHelp')}
           </p>
         </div>
         
         <div className="mb-4 rounded-md border border-border p-4">
-          <h4 className="mb-2 font-medium text-primary">Integration Options</h4>
+          <h4 className="mb-2 font-medium text-primary">{t('dashboard.installModal.integrations.title')}</h4>
           <ul className="space-y-2 text-sm text-secondary">
             <li className="flex items-start">
               <span className="mr-2 text-green-400">✓</span>
-              <span>Works with any website or platform that allows custom HTML</span>
+              <span>{t('dashboard.installModal.integrations.point1')}</span>
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-green-400">✓</span>
-              <span>Real-time conversation with your AI agent</span>
+              <span>{t('dashboard.installModal.integrations.point2')}</span>
             </li>
             <li className="flex items-start">
               <span className="mr-2 text-green-400">✓</span>
-              <span>All your configured appearance settings and tools are applied</span>
+              <span>{t('dashboard.installModal.integrations.point3')}</span>
             </li>
           </ul>
         </div>
@@ -106,7 +125,7 @@ export default function InstallModal({ chatbotId }: InstallModalProps) {
             onClick={() => setIsOpen(false)}
             className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80"
           >
-            Close
+            {t('dashboard.installModal.closeButton')}
           </button>
         </div>
       </div>

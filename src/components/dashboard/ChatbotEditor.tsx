@@ -6,6 +6,7 @@ import Appearance from './editor/Appearance';
 import Rules from './editor/Rules';
 import Agent, { AgentConfig } from './editor/Agent';
 import ChatWidget from '../widgets/ChatWidget';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 export interface AppearanceSettings {
   headerText: string;
@@ -64,6 +65,7 @@ export default function ChatbotEditor({
   isSaving = false
 }: ChatbotEditorProps) {
   const [activeTab, setActiveTab] = useState('agent');
+  const { t } = useSafeTranslation();
   
   // Default settings if not provided
   const [appearanceSettings, setAppearanceSettings] = useState<AppearanceSettings>(
@@ -118,10 +120,10 @@ export default function ChatbotEditor({
   }, [initialSettings]);
   
   const tabs: EditorTab[] = [
-    { id: 'agent', label: 'Agent' },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'rules', label: 'Rules' },
-    { id: 'suggestions', label: 'Suggestions' }
+    { id: 'agent', label: t('dashboard.editor.tabs.agent') },
+    { id: 'appearance', label: t('dashboard.editor.tabs.appearance') },
+    { id: 'rules', label: t('dashboard.editor.tabs.rules') },
+    { id: 'suggestions', label: t('dashboard.editor.tabs.suggestions') }
   ];
   
   const handlePreviewMessage = async (message: string): Promise<string> => {
@@ -257,7 +259,7 @@ export default function ChatbotEditor({
       {/* Preview section */}
       <div className="w-full md:w-1/2">
         <div className="sticky top-4">
-          <h2 className="text-lg font-medium text-primary mb-2">Live Preview</h2>
+          <h2 className="text-lg font-medium text-primary mb-2">{t('dashboard.editor.preview.title')}</h2>
           
           <ChatWidget 
             chatbotId={chatbotId || ''}

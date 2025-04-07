@@ -10,6 +10,7 @@ import { getChatbot, updateChatbot, updateChatbotSettings } from '@/lib/firebase
 import Link from 'next/link';
 import { AppearanceSettings, Rule, Question } from '@/components/dashboard/ChatbotEditor';
 import { AgentConfig } from '@/components/dashboard/editor/Agent';
+import { ChatAppearance } from '@/components/widgets/ChatWidget'; 
 
 export default function ChatbotPage() {
   const { user, loading: authLoading } = useAuth();
@@ -214,7 +215,7 @@ export default function ChatbotPage() {
               isSaving={isSaving}
             />
             
-            <InstallModal chatbotId={chatbotId} />
+            <InstallModal chatbotId={chatbotId} appearance={chatbot?.settings?.appearance as ChatAppearance} />
             
             {/* Toast notification that doesn't affect layout */}
             {saveMessage && (

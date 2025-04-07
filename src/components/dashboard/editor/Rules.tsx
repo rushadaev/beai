@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Rule } from '../ChatbotEditor';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface RulesProps {
   initialRules?: Rule[];
@@ -16,11 +17,12 @@ export default function Rules({
   onPreviewUpdate,
   isSaving = false
 }: RulesProps) {
+  const { t } = useSafeTranslation();
   const [rules, setRules] = useState<Rule[]>(initialRules.length > 0 ? 
     initialRules : [
-      { id: '1', text: 'Be friendly and helpful', enabled: true },
-      { id: '2', text: 'Do not share personal information', enabled: true },
-      { id: '3', text: 'Keep responses concise', enabled: true }
+      { id: '1', text: t('dashboard.editor.rules.defaults.0'), enabled: true },
+      { id: '2', text: t('dashboard.editor.rules.defaults.1'), enabled: true },
+      { id: '3', text: t('dashboard.editor.rules.defaults.2'), enabled: true }
     ]
   );
   const [newRule, setNewRule] = useState('');
@@ -122,10 +124,10 @@ export default function Rules({
     <div className="space-y-6 pb-16 relative">
       <div>
         <h3 className="text-lg font-medium text-primary">
-          Chatbot Rules
+          {t('dashboard.editor.rules.title')}
         </h3>
         <p className="text-sm text-secondary">
-          Define rules that will guide how your chatbot responds to users
+          {t('dashboard.editor.rules.description')}
         </p>
       </div>
 
@@ -134,7 +136,7 @@ export default function Rules({
           type="text"
           value={newRule}
           onChange={(e) => setNewRule(e.target.value)}
-          placeholder="Add a new rule..."
+          placeholder={t('dashboard.editor.rules.addPlaceholder')}
           className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <button
@@ -142,14 +144,14 @@ export default function Rules({
           disabled={!newRule.trim() || isSaving}
           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
         >
-          Add
+          {t('dashboard.editor.rules.addButton')}
         </button>
       </form>
 
       <div className="space-y-2">
         {rules.length === 0 ? (
           <div className="rounded-md border border-border bg-dark p-4 text-center text-secondary">
-            No rules yet. Add some to guide your chatbot behavior.
+            {t('dashboard.editor.rules.noRules')}
           </div>
         ) : (
           <div className="space-y-3">
@@ -174,13 +176,13 @@ export default function Rules({
                       disabled={!editText.trim() || isSaving}
                       className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                     >
-                      Save
+                      {t('dashboard.editor.rules.saveEditButton')}
                     </button>
                     <button
                       onClick={handleCancelEdit}
                       className="rounded-md bg-dark px-2 py-1 text-xs font-medium text-secondary hover:bg-card"
                     >
-                      Cancel
+                      {t('dashboard.editor.rules.cancelEditButton')}
                     </button>
                   </div>
                 ) : (
@@ -210,7 +212,7 @@ export default function Rules({
                         onClick={() => handleReorderRule(rule.id, 'up')}
                         disabled={rules.indexOf(rule) === 0 || isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Move up"
+                        title={t('dashboard.editor.rules.moveUpTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -220,7 +222,7 @@ export default function Rules({
                         onClick={() => handleReorderRule(rule.id, 'down')}
                         disabled={rules.indexOf(rule) === rules.length - 1 || isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Move down"
+                        title={t('dashboard.editor.rules.moveDownTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -230,7 +232,7 @@ export default function Rules({
                         onClick={() => handleStartEdit(rule)}
                         disabled={isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Edit"
+                        title={t('dashboard.editor.rules.editTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -240,7 +242,7 @@ export default function Rules({
                         onClick={() => handleDeleteRule(rule.id)}
                         disabled={isSaving}
                         className="rounded p-1 text-red-400 hover:bg-card disabled:opacity-30"
-                        title="Delete"
+                        title={t('dashboard.editor.rules.deleteTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -259,7 +261,7 @@ export default function Rules({
       <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-card py-3 px-4">
         <div className="flex justify-between items-center">
           <p className="text-xs text-secondary italic">
-            Changes appear in the preview immediately.
+            {t('dashboard.editor.rules.previewNote')}
           </p>
           <div className="flex space-x-2">
             <button
@@ -268,14 +270,14 @@ export default function Rules({
               disabled={isSaving}
               className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
             >
-              {isSaving ? 'Saving...' : 'Apply Changes'}
+              {isSaving ? t('dashboard.editor.rules.savingButton') : t('dashboard.editor.rules.applyButton')}
             </button>
             <button
               type="button"
               className="rounded-md bg-dark border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-dark/80"
               onClick={() => window.dispatchEvent(new CustomEvent('open-install-modal'))}
             >
-              Install
+              {t('dashboard.editor.rules.installButton')}
             </button>
           </div>
         </div>

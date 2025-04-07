@@ -59,7 +59,7 @@ export default function Login() {
       <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-dark">
         <div className="w-full max-w-md space-y-8 rounded-lg bg-card p-8 shadow-md border border-border">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-primary">BeAI</h1>
+            <h1 className="text-4xl font-bold text-primary">VibeCraft</h1>
             <p className="mt-2 text-sm text-secondary">Sign in to your account</p>
           </div>
           

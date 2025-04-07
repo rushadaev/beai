@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Question } from '../ChatbotEditor';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface SuggestionQuestionsProps {
   initialQuestions?: Question[];
@@ -16,11 +17,12 @@ export default function SuggestionQuestions({
   onPreviewUpdate,
   isSaving = false
 }: SuggestionQuestionsProps) {
+  const { t } = useSafeTranslation();
   const [questions, setQuestions] = useState<Question[]>(initialQuestions.length > 0 ? 
     initialQuestions : [
-      { id: '1', text: 'How can I get started?' },
-      { id: '2', text: 'What are your business hours?' },
-      { id: '3', text: 'Do you offer support?' }
+      { id: '1', text: t('dashboard.editor.suggestions.defaults.0') },
+      { id: '2', text: t('dashboard.editor.suggestions.defaults.1') },
+      { id: '3', text: t('dashboard.editor.suggestions.defaults.2') }
     ]
   );
   const [newQuestion, setNewQuestion] = useState('');
@@ -115,10 +117,10 @@ export default function SuggestionQuestions({
     <div className="space-y-6 pb-16 relative">
       <div>
         <h3 className="text-lg font-medium text-primary">
-          Suggested Questions
+          {t('dashboard.editor.suggestions.title')}
         </h3>
         <p className="text-sm text-secondary">
-          Add questions that will appear as suggestions to your users
+          {t('dashboard.editor.suggestions.description')}
         </p>
       </div>
 
@@ -127,7 +129,7 @@ export default function SuggestionQuestions({
           type="text"
           value={newQuestion}
           onChange={(e) => setNewQuestion(e.target.value)}
-          placeholder="Add a new suggested question..."
+          placeholder={t('dashboard.editor.suggestions.addPlaceholder')}
           className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <button
@@ -135,14 +137,14 @@ export default function SuggestionQuestions({
           disabled={!newQuestion.trim() || isSaving}
           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
         >
-          Add
+          {t('dashboard.editor.suggestions.addButton')}
         </button>
       </form>
 
       <div className="space-y-2">
         {questions.length === 0 ? (
           <div className="rounded-md border border-border bg-dark p-4 text-center text-secondary">
-            No suggested questions yet. Add some to help your users get started.
+            {t('dashboard.editor.suggestions.noSuggestions')}
           </div>
         ) : (
           <div className="space-y-3">
@@ -165,13 +167,13 @@ export default function SuggestionQuestions({
                       disabled={!editText.trim() || isSaving}
                       className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                     >
-                      Save
+                      {t('dashboard.editor.suggestions.saveEditButton')}
                     </button>
                     <button
                       onClick={handleCancelEdit}
                       className="rounded-md bg-dark px-2 py-1 text-xs font-medium text-secondary hover:bg-card"
                     >
-                      Cancel
+                      {t('dashboard.editor.suggestions.cancelEditButton')}
                     </button>
                   </div>
                 ) : (
@@ -182,7 +184,7 @@ export default function SuggestionQuestions({
                         onClick={() => handleReorderQuestion(question.id, 'up')}
                         disabled={questions.indexOf(question) === 0 || isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Move up"
+                        title={t('dashboard.editor.suggestions.moveUpTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -192,7 +194,7 @@ export default function SuggestionQuestions({
                         onClick={() => handleReorderQuestion(question.id, 'down')}
                         disabled={questions.indexOf(question) === questions.length - 1 || isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Move down"
+                        title={t('dashboard.editor.suggestions.moveDownTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -202,7 +204,7 @@ export default function SuggestionQuestions({
                         onClick={() => handleStartEdit(question)}
                         disabled={isSaving}
                         className="rounded p-1 text-secondary hover:bg-card disabled:opacity-30"
-                        title="Edit"
+                        title={t('dashboard.editor.suggestions.editTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -212,7 +214,7 @@ export default function SuggestionQuestions({
                         onClick={() => handleDeleteQuestion(question.id)}
                         disabled={isSaving}
                         className="rounded p-1 text-red-400 hover:bg-card disabled:opacity-30"
-                        title="Delete"
+                        title={t('dashboard.editor.suggestions.deleteTitle')}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -231,7 +233,7 @@ export default function SuggestionQuestions({
       <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-card py-3 px-4">
         <div className="flex justify-between items-center">
           <p className="text-xs text-secondary italic">
-            Changes appear in the preview immediately.
+            {t('dashboard.editor.suggestions.previewNote')}
           </p>
           <div className="flex space-x-2">
             <button
@@ -240,14 +242,14 @@ export default function SuggestionQuestions({
               disabled={isSaving}
               className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
             >
-              {isSaving ? 'Saving...' : 'Apply Changes'}
+              {isSaving ? t('dashboard.editor.suggestions.savingButton') : t('dashboard.editor.suggestions.applyButton')}
             </button>
             <button
               type="button"
               className="rounded-md bg-dark border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-dark/80"
               onClick={() => window.dispatchEvent(new CustomEvent('open-install-modal'))}
             >
-              Install
+              {t('dashboard.editor.suggestions.installButton')}
             </button>
           </div>
         </div>

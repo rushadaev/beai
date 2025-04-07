@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 export interface ChatMessage {
   text: string;
@@ -40,10 +41,11 @@ export default function ChatWidget({
   isPreview = false,
   onPreviewMessage
 }: ChatWidgetProps) {
+  const { t } = useSafeTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      text: 'Hello! How can I help you today?',
+      text: t('chatWidget.initialMessage'),
       sender: 'bot',
       timestamp: new Date()
     }
@@ -66,7 +68,7 @@ export default function ChatWidget({
   const resetChat = () => {
     setMessages([
       {
-        text: 'Hello! How can I help you today?',
+        text: t('chatWidget.initialMessage'),
         sender: 'bot',
         timestamp: new Date()
       }
@@ -129,7 +131,7 @@ export default function ChatWidget({
       
       // Fallback to a generic error message
       const botMessage = {
-        text: 'Sorry, I encountered an error processing your request.',
+        text: t('chatWidget.errorMessage'),
         sender: 'bot' as const,
         timestamp: new Date()
       };
@@ -193,7 +195,7 @@ export default function ChatWidget({
             onClick={resetChat}
             className="text-xs text-white/80 hover:text-white"
           >
-            Reset
+            {t('chatWidget.resetButton')}
           </button>
         )}
       </div>
@@ -277,7 +279,7 @@ export default function ChatWidget({
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type your message..."
+            placeholder={t('chatWidget.inputPlaceholder')}
             className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
           />
           <button
@@ -288,7 +290,7 @@ export default function ChatWidget({
               color: appearance.buttonTextColor
             }}
           >
-            Send
+            {t('chatWidget.sendButton')}
           </button>
         </form>
       </div>

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { getUserData, updateUserProfile, updateUserPreferences } from '@/lib/firebase/firestore';
 import { updateUserPassword, logoutAllDevices } from '@/lib/firebase/auth';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 // Define types for user data
 interface UserNotifications {
@@ -30,6 +31,7 @@ interface UserData {
 }
 
 export default function AccountPage() {
+  const { t } = useSafeTranslation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile');
   const [firstName, setFirstName] = useState('');
@@ -128,10 +130,10 @@ export default function AccountPage() {
           
           // Set notification preferences if they exist
           if (userData.preferences?.notifications) {
-            setNotifications({
-              ...notifications,
-              ...userData.preferences.notifications
-            });
+            setNotifications(prevNotifications => ({
+              ...prevNotifications,
+              ...userData.preferences?.notifications
+            }));
           }
         }
       } catch (error) {
@@ -142,7 +144,7 @@ export default function AccountPage() {
     }
     
     fetchUserData();
-  }, [user, notifications]);
+  }, [user]);
   
   // First, add a check for Google provider in the useEffect
   useEffect(() => {
@@ -218,24 +220,24 @@ export default function AccountPage() {
     
     // Basic validation
     if (!currentPassword) {
-      setPasswordError('Current password is required');
+      setPasswordError(t('dashboard.account.security.errors.currentPasswordRequired'));
       return;
     }
     
     if (!newPassword) {
-      setPasswordError('New password is required');
+      setPasswordError(t('dashboard.account.security.errors.newPasswordRequired'));
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match');
+      setPasswordError(t('dashboard.account.security.errors.passwordsDoNotMatch'));
       return;
     }
     
     // Password strength check
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      setPasswordError('Password must be at least 8 characters and include a letter, a number, and a special character');
+      setPasswordError(t('dashboard.account.security.errors.passwordComplexity'));
       return;
     }
     
@@ -250,11 +252,11 @@ export default function AccountPage() {
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        setPasswordError(result.error || 'Failed to update password');
+        setPasswordError(result.error || t('dashboard.account.security.errors.updateFailed'));
       }
     } catch (error) {
       console.error('Error updating password:', error);
-      setPasswordError('An unexpected error occurred');
+      setPasswordError(t('dashboard.account.security.errors.unexpectedError'));
     } finally {
       setSaving(false);
     }
@@ -284,17 +286,17 @@ export default function AccountPage() {
     <DashboardLayout>
       <div className="container mx-auto px-4">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-primary">Account Settings</h2>
-          <p className="text-secondary">Manage your account preferences and settings</p>
+          <h2 className="text-2xl font-bold text-primary">{t('dashboard.account.title')}</h2>
+          <p className="text-secondary">{t('dashboard.account.subtitle')}</p>
         </div>
         
         {/* Tab navigation */}
         <div className="mb-6 border-b border-border">
           <nav className="-mb-px flex space-x-8">
             {[
-              { id: 'profile', label: 'Profile' },
-              { id: 'security', label: 'Security' },
-              { id: 'preferences', label: 'Preferences' },
+              { id: 'profile', labelKey: 'dashboard.account.tabs.profile' },
+              { id: 'security', labelKey: 'dashboard.account.tabs.security' },
+              { id: 'preferences', labelKey: 'dashboard.account.tabs.preferences' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -305,7 +307,7 @@ export default function AccountPage() {
                     : 'border-transparent text-secondary hover:border-border hover:text-primary'
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             ))}
           </nav>
@@ -314,7 +316,7 @@ export default function AccountPage() {
         {/* Success message */}
         {saveSuccess && (
           <div className="mb-4 rounded-md bg-green-500/10 p-3 text-green-400">
-            <p>Changes saved successfully!</p>
+            <p>{t('dashboard.account.messages.saveSuccess')}</p>
           </div>
         )}
         
@@ -343,7 +345,7 @@ export default function AccountPage() {
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-medium text-primary">Personal Information</h3>
+                <h3 className="mb-4 text-lg font-medium text-primary">{t('dashboard.account.profile.title')}</h3>
                 
                 <div className="mb-6 overflow-hidden rounded-lg border border-border bg-dark shadow-sm">
                   <div className="flex flex-col items-center justify-center p-8 sm:flex-row sm:justify-start">
@@ -358,9 +360,9 @@ export default function AccountPage() {
                       </button>
                     </div>
                     <div>
-                      <h4 className="text-xl font-medium text-primary">{firstName || user?.email?.split('@')[0] || 'User'}</h4>
+                      <h4 className="text-xl font-medium text-primary">{firstName || user?.email?.split('@')[0] || t('dashboard.account.profile.defaultUser')}</h4>
                       <p className="text-secondary">{user?.email}</p>
-                      <p className="mt-1 text-xs text-secondary">Member since {new Date().toLocaleDateString()}</p>
+                      <p className="mt-1 text-xs text-secondary">{t('dashboard.account.profile.memberSince', { date: new Date().toLocaleDateString() })}</p>
                     </div>
                   </div>
                 </div>
@@ -368,33 +370,33 @@ export default function AccountPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-primary">
-                      First Name
+                      {t('dashboard.account.profile.firstNameLabel')}
                     </label>
                     <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Enter your first name"
+                      placeholder={t('dashboard.account.profile.firstNamePlaceholder')}
                       className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                     />
                   </div>
                   
                   <div>
                     <label className="mb-1 block text-sm font-medium text-primary">
-                      Last Name
+                      {t('dashboard.account.profile.lastNameLabel')}
                     </label>
                     <input
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Enter your last name"
+                      placeholder={t('dashboard.account.profile.lastNamePlaceholder')}
                       className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                     />
                   </div>
                   
                   <div>
                     <label className="mb-1 block text-sm font-medium text-primary">
-                      Email Address
+                      {t('dashboard.account.profile.emailLabel')}
                     </label>
                     <input
                       type="email"
@@ -403,19 +405,19 @@ export default function AccountPage() {
                       className="w-full rounded-md border border-border bg-dark/50 px-4 py-2 text-primary opacity-70"
                     />
                     <p className="mt-1 text-xs text-secondary">
-                      Your email address cannot be changed
+                      {t('dashboard.account.profile.emailHelpText')}
                     </p>
                   </div>
                   
                   <div>
                     <label className="mb-1 block text-sm font-medium text-primary">
-                      Company Name
+                      {t('dashboard.account.profile.companyNameLabel')}
                     </label>
                     <input
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Enter your company name"
+                      placeholder={t('dashboard.account.profile.companyNamePlaceholder')}
                       className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                     />
                   </div>
@@ -427,7 +429,7 @@ export default function AccountPage() {
                     disabled={saving || loading}
                     className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                   >
-                    {saving ? 'Saving...' : 'Save Changes'}
+                    {saving ? t('dashboard.account.buttons.saving') : t('dashboard.account.buttons.saveChanges')}
                   </button>
                 </div>
               </div>
@@ -436,7 +438,7 @@ export default function AccountPage() {
             {/* Security Tab */}
             {activeTab === 'security' && (
               <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-medium text-primary">Change Password</h3>
+                <h3 className="mb-4 text-lg font-medium text-primary">{t('dashboard.account.security.changePasswordTitle')}</h3>
                 
                 {isGoogleUser ? (
                   <div className="mb-6 rounded-md bg-blue-500/10 p-4 text-blue-400">
@@ -445,15 +447,15 @@ export default function AccountPage() {
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                       <div>
-                        <p className="font-medium">Google Account Detected</p>
-                        <p className="mt-1 text-sm">Your account uses Google authentication. To change your password, please visit your Google account settings.</p>
+                        <p className="font-medium">{t('dashboard.account.security.googleAccount.title')}</p>
+                        <p className="mt-1 text-sm">{t('dashboard.account.security.googleAccount.message')}</p>
                         <a 
                           href="https://myaccount.google.com/security" 
                           target="_blank" 
                           rel="noopener noreferrer" 
                           className="mt-2 inline-block text-sm underline"
                         >
-                          Go to Google Account Settings
+                          {t('dashboard.account.security.googleAccount.link')}
                         </a>
                       </div>
                     </div>
@@ -463,7 +465,7 @@ export default function AccountPage() {
                     {/* Password success message */}
                     {passwordSuccess && (
                       <div className="mb-4 rounded-md bg-green-500/10 p-3 text-green-400">
-                        <p>Password updated successfully!</p>
+                        <p>{t('dashboard.account.security.messages.passwordUpdateSuccess')}</p>
                       </div>
                     )}
                     
@@ -477,42 +479,42 @@ export default function AccountPage() {
                     <div className="space-y-4">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-primary">
-                          Current Password
+                          {t('dashboard.account.security.currentPasswordLabel')}
                         </label>
                         <input
                           type="password"
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Enter your current password"
+                          placeholder={t('dashboard.account.security.currentPasswordPlaceholder')}
                           className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                         />
                       </div>
                       
                       <div>
                         <label className="mb-1 block text-sm font-medium text-primary">
-                          New Password
+                          {t('dashboard.account.security.newPasswordLabel')}
                         </label>
                         <input
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter your new password"
+                          placeholder={t('dashboard.account.security.newPasswordPlaceholder')}
                           className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                         />
                         <p className="mt-1 text-xs text-secondary">
-                          Must be at least 8 characters and include a letter, a number, and a special character
+                          {t('dashboard.account.security.passwordComplexityHelpText')}
                         </p>
                       </div>
                       
                       <div>
                         <label className="mb-1 block text-sm font-medium text-primary">
-                          Confirm New Password
+                          {t('dashboard.account.security.confirmPasswordLabel')}
                         </label>
                         <input
                           type="password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Confirm your new password"
+                          placeholder={t('dashboard.account.security.confirmPasswordPlaceholder')}
                           className="w-full rounded-md border border-border bg-dark px-4 py-2 text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
                         />
                       </div>
@@ -523,7 +525,7 @@ export default function AccountPage() {
                           disabled={saving} 
                           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                         >
-                          {saving ? 'Updating...' : 'Update Password'}
+                          {saving ? t('dashboard.account.buttons.updating') : t('dashboard.account.buttons.updatePassword')}
                         </button>
                       </div>
                     </div>
@@ -531,26 +533,26 @@ export default function AccountPage() {
                 )}
                 
                 <div className="mt-8 border-t border-border pt-6">
-                  <h3 className="mb-4 text-lg font-medium text-primary">Two-Factor Authentication</h3>
+                  <h3 className="mb-4 text-lg font-medium text-primary">{t('dashboard.account.security.twoFactor.title')}</h3>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-primary">Enhance your account security</p>
+                      <p className="text-primary">{t('dashboard.account.security.twoFactor.subtitle')}</p>
                       <p className="text-sm text-secondary">
-                        Enable two-factor authentication to add an extra layer of security to your account
+                        {t('dashboard.account.security.twoFactor.description')}
                       </p>
                     </div>
                     <button 
                       disabled 
                       className="rounded-md border border-accent/50 bg-transparent px-4 py-2 text-sm font-medium text-accent/50"
                     >
-                      Coming Soon
+                      {t('dashboard.account.security.twoFactor.comingSoonButton')}
                     </button>
                   </div>
                 </div>
                 
                 <div className="mt-8 border-t border-border pt-6">
-                  <h3 className="mb-4 text-lg font-medium text-primary">Account Access</h3>
+                  <h3 className="mb-4 text-lg font-medium text-primary">{t('dashboard.account.security.access.title')}</h3>
                   
                   <div className="mb-4 rounded-lg bg-dark p-4">
                     <div className="flex items-center">
@@ -560,12 +562,12 @@ export default function AccountPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-primary">{deviceInfo.browser} on {deviceInfo.os}</h4>
-                        <p className="text-xs text-secondary">Last active: {deviceInfo.lastActive}</p>
+                        <h4 className="text-sm font-medium text-primary">{t('dashboard.account.security.access.deviceInfo', { browser: deviceInfo.browser, os: deviceInfo.os })}</h4>
+                        <p className="text-xs text-secondary">{t('dashboard.account.security.access.lastActive', { date: deviceInfo.lastActive })}</p>
                       </div>
                       <div className="ml-auto flex">
                         <span className="mr-2 rounded-full bg-green-400/10 px-2 py-0.5 text-xs font-medium text-green-400">
-                          Current
+                          {t('dashboard.account.security.access.currentDevice')}
                         </span>
                       </div>
                     </div>
@@ -577,11 +579,11 @@ export default function AccountPage() {
                       disabled={saving}
                       className="rounded-md bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                     >
-                      {saving ? 'Logging Out...' : 'Log Out All Devices'}
+                      {saving ? t('dashboard.account.buttons.loggingOut') : t('dashboard.account.buttons.logOutAll')}
                     </button>
                   </div>
                   <p className="mt-2 text-xs text-secondary text-right">
-                    Note: This will sign you out from your current session
+                    {t('dashboard.account.security.access.logoutNote')}
                   </p>
                 </div>
               </div>
@@ -590,14 +592,14 @@ export default function AccountPage() {
             {/* Preferences Tab */}
             {activeTab === 'preferences' && (
               <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-medium text-primary">Notification Settings</h3>
+                <h3 className="mb-4 text-lg font-medium text-primary">{t('dashboard.account.preferences.title')}</h3>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-primary">New Conversations</p>
+                      <p className="text-primary">{t('dashboard.account.preferences.notifications.newChats.title')}</p>
                       <p className="text-sm text-secondary">
-                        Receive notifications when users start new conversations
+                        {t('dashboard.account.preferences.notifications.newChats.description')}
                       </p>
                     </div>
                     <div className="relative flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-card" onClick={() => setNotifications({...notifications, newChats: !notifications.newChats})}>
@@ -607,9 +609,9 @@ export default function AccountPage() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-primary">Chat Updates</p>
+                      <p className="text-primary">{t('dashboard.account.preferences.notifications.chatUpdates.title')}</p>
                       <p className="text-sm text-secondary">
-                        Get notified about new messages in your conversations
+                        {t('dashboard.account.preferences.notifications.chatUpdates.description')}
                       </p>
                     </div>
                     <div className="relative flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-card" onClick={() => setNotifications({...notifications, chatUpdates: !notifications.chatUpdates})}>
@@ -619,9 +621,9 @@ export default function AccountPage() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-primary">Monthly Report</p>
+                      <p className="text-primary">{t('dashboard.account.preferences.notifications.monthlyReport.title')}</p>
                       <p className="text-sm text-secondary">
-                        Receive a monthly summary of your account activity
+                        {t('dashboard.account.preferences.notifications.monthlyReport.description')}
                       </p>
                     </div>
                     <div className="relative flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-card" onClick={() => setNotifications({...notifications, monthlyReport: !notifications.monthlyReport})}>
@@ -631,9 +633,9 @@ export default function AccountPage() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-primary">Product Updates</p>
+                      <p className="text-primary">{t('dashboard.account.preferences.notifications.productUpdates.title')}</p>
                       <p className="text-sm text-secondary">
-                        Get notified about new features and improvements
+                        {t('dashboard.account.preferences.notifications.productUpdates.description')}
                       </p>
                     </div>
                     <div className="relative flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-card" onClick={() => setNotifications({...notifications, productUpdates: !notifications.productUpdates})}>
@@ -648,7 +650,7 @@ export default function AccountPage() {
                     disabled={saving || loading}
                     className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                   >
-                    {saving ? 'Saving...' : 'Save Preferences'}
+                    {saving ? t('dashboard.account.buttons.saving') : t('dashboard.account.buttons.savePreferences')}
                   </button>
                 </div>
               </div>

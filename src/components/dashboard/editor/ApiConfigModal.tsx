@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface ApiParam {
   type: string;
@@ -45,6 +46,7 @@ export default function ApiConfigModal({
   onSave,
   isEditing
 }: ApiConfigModalProps) {
+  const { t } = useSafeTranslation();
   const [config, setConfig] = useState<ApiToolConfig>({
     name: "",
     description: "",
@@ -261,7 +263,7 @@ export default function ApiConfigModal({
       updatedConfig.api_config.body_template = parsedBody;
       setConfig(updatedConfig);
     } catch (e) {
-      alert(`Invalid JSON for body template: ${e instanceof Error ? e.message : String(e)}`);
+      alert(t('dashboard.editor.agent.apiConfigModal.alerts.invalidBodyJson', { message: e instanceof Error ? e.message : String(e) }));
     }
   };
   
@@ -283,19 +285,19 @@ export default function ApiConfigModal({
       updatedConfig.api_config.response_template = parsedResponse;
       setConfig(updatedConfig);
     } catch (e) {
-      alert(`Invalid JSON for response template: ${e instanceof Error ? e.message : String(e)}`);
+      alert(t('dashboard.editor.agent.apiConfigModal.alerts.invalidResponseJson', { message: e instanceof Error ? e.message : String(e) }));
     }
   };
   
   const handleSave = () => {
     // Validate minimal requirements
     if (!config.name.trim()) {
-      alert("Tool name is required");
+      alert(t('dashboard.editor.agent.apiConfigModal.alerts.toolNameRequired'));
       return;
     }
     
     if (!config.api_config?.url.trim()) {
-      alert("API URL is required");
+      alert(t('dashboard.editor.agent.apiConfigModal.alerts.apiUrlRequired'));
       return;
     }
     
@@ -309,7 +311,7 @@ export default function ApiConfigModal({
         config.api_config!.response_template = JSON.parse(responseTemplateString);
       }
     } catch (e) {
-      alert(`Invalid JSON in templates: ${e instanceof Error ? e.message : String(e)}`);
+      alert(t('dashboard.editor.agent.apiConfigModal.alerts.invalidTemplateJson', { message: e instanceof Error ? e.message : String(e) }));
       return;
     }
     
@@ -324,11 +326,12 @@ export default function ApiConfigModal({
       <div className="bg-card border border-border rounded-lg shadow-lg p-6 max-w-3xl w-full max-h-[85vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-primary">
-            {isEditing ? 'Edit API Call' : 'Add API Call'}
+            {isEditing ? t('dashboard.editor.agent.apiConfigModal.editTitle') : t('dashboard.editor.agent.apiConfigModal.addTitle')}
           </h3>
           <button 
             onClick={onClose}
             className="text-secondary hover:text-primary"
+            title={t('dashboard.editor.agent.apiConfigModal.closeTooltip')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -347,7 +350,7 @@ export default function ApiConfigModal({
                   : 'text-secondary hover:text-primary'
               }`}
             >
-              Basic Info
+              {t('dashboard.editor.agent.apiConfigModal.tabs.basicInfo')}
             </button>
             <button 
               onClick={() => setCurrentTab('parameters')}
@@ -357,7 +360,7 @@ export default function ApiConfigModal({
                   : 'text-secondary hover:text-primary'
               }`}
             >
-              Parameters
+              {t('dashboard.editor.agent.apiConfigModal.tabs.parameters')}
             </button>
             <button 
               onClick={() => setCurrentTab('apiConfig')}
@@ -367,7 +370,7 @@ export default function ApiConfigModal({
                   : 'text-secondary hover:text-primary'
               }`}
             >
-              API Configuration
+              {t('dashboard.editor.agent.apiConfigModal.tabs.apiConfiguration')}
             </button>
           </div>
         </div>
@@ -377,33 +380,33 @@ export default function ApiConfigModal({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-secondary mb-1">
-                Tool Name
+                {t('dashboard.editor.agent.apiConfigModal.basicInfo.toolNameLabel')}
               </label>
               <input
                 type="text"
                 value={config.name}
                 onChange={(e) => setConfig({...config, name: e.target.value})}
                 className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
-                placeholder="create_task"
+                placeholder={t('dashboard.editor.agent.apiConfigModal.basicInfo.toolNamePlaceholder')}
               />
               <p className="mt-1 text-xs text-secondary">
-                The name should be in snake_case and describe what the API call does
+                {t('dashboard.editor.agent.apiConfigModal.basicInfo.toolNameHelpText')}
               </p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-secondary mb-1">
-                Description
+                {t('dashboard.editor.agent.apiConfigModal.basicInfo.descriptionLabel')}
               </label>
               <textarea
                 value={config.description || ""}
                 onChange={(e) => setConfig({...config, description: e.target.value})}
                 className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
-                placeholder="Create a new task for a user"
+                placeholder={t('dashboard.editor.agent.apiConfigModal.basicInfo.descriptionPlaceholder')}
                 rows={3}
               />
               <p className="mt-1 text-xs text-secondary">
-                Clearly describe what this API call does and when it should be used
+                {t('dashboard.editor.agent.apiConfigModal.basicInfo.descriptionHelpText')}
               </p>
             </div>
           </div>
@@ -414,7 +417,7 @@ export default function ApiConfigModal({
           <div className="space-y-6">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium text-primary">Parameters</h4>
+                <h4 className="text-sm font-medium text-primary">{t('dashboard.editor.agent.apiConfigModal.parameters.title')}</h4>
                 <label className="text-xs text-secondary">
                   <input 
                     type="checkbox" 
@@ -435,7 +438,7 @@ export default function ApiConfigModal({
                     }}
                     className="mr-1"
                   />
-                  Allow additional parameters
+                  {t('dashboard.editor.agent.apiConfigModal.parameters.allowAdditionalLabel')}
                 </label>
               </div>
               
@@ -444,10 +447,10 @@ export default function ApiConfigModal({
                 <table className="w-full text-sm text-left">
                   <thead className="bg-dark">
                     <tr>
-                      <th className="px-4 py-2 text-secondary">Parameter</th>
-                      <th className="px-4 py-2 text-secondary">Type</th>
-                      <th className="px-4 py-2 text-secondary">Required</th>
-                      <th className="px-4 py-2 text-secondary">Description</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.parameters.table.headerParam')}</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.parameters.table.headerType')}</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.parameters.table.headerRequired')}</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.parameters.table.headerDescription')}</th>
                       <th className="px-4 py-2 text-secondary"></th>
                     </tr>
                   </thead>
@@ -457,13 +460,17 @@ export default function ApiConfigModal({
                         <td className="px-4 py-2 text-primary">{name}</td>
                         <td className="px-4 py-2 text-primary">{param.type}</td>
                         <td className="px-4 py-2 text-primary">
-                          {config.parameters?.required.includes(name) ? 'Yes' : 'No'}
+                          {config.parameters?.required.includes(name) ?
+                            t('dashboard.editor.agent.apiConfigModal.parameters.table.requiredYes') :
+                            t('dashboard.editor.agent.apiConfigModal.parameters.table.requiredNo')
+                          }
                         </td>
                         <td className="px-4 py-2 text-primary">{param.description}</td>
                         <td className="px-4 py-2 text-primary">
                           <button
                             onClick={() => removeParameter(name)}
                             className="text-red-400 hover:text-red-300"
+                            title={t('dashboard.editor.agent.apiConfigModal.parameters.table.removeParamTitle')}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -475,7 +482,7 @@ export default function ApiConfigModal({
                     {Object.keys(config.parameters?.properties || {}).length === 0 && (
                       <tr>
                         <td colSpan={5} className="px-4 py-4 text-secondary text-center italic">
-                          No parameters defined yet
+                          {t('dashboard.editor.agent.apiConfigModal.parameters.table.noParams')}
                         </td>
                       </tr>
                     )}
@@ -485,21 +492,21 @@ export default function ApiConfigModal({
               
               {/* Add Parameter Form */}
               <div className="border border-border rounded-md p-4 bg-dark/50">
-                <h5 className="font-medium text-sm text-primary mb-3">Add Parameter</h5>
+                <h5 className="font-medium text-sm text-primary mb-3">{t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.title')}</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-secondary mb-1">Name</label>
+                    <label className="block text-xs text-secondary mb-1">{t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.nameLabel')}</label>
                     <input
                       type="text"
                       value={newParamName}
                       onChange={(e) => setNewParamName(e.target.value)}
                       className="w-full rounded-md border border-border bg-dark px-2 py-1 text-sm text-primary focus:border-accent focus:outline-none"
-                      placeholder="user_id"
+                      placeholder={t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.namePlaceholder')}
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs text-secondary mb-1">Type</label>
+                    <label className="block text-xs text-secondary mb-1">{t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.typeLabel')}</label>
                     <select
                       value={newParamType}
                       onChange={(e) => setNewParamType(e.target.value)}
@@ -512,27 +519,27 @@ export default function ApiConfigModal({
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-xs text-secondary mb-1">Description</label>
+                    <label className="block text-xs text-secondary mb-1">{t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.descriptionLabel')}</label>
                     <input
                       type="text"
                       value={newParamDesc}
                       onChange={(e) => setNewParamDesc(e.target.value)}
                       className="w-full rounded-md border border-border bg-dark px-2 py-1 text-sm text-primary focus:border-accent focus:outline-none"
-                      placeholder="User identifier"
+                      placeholder={t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.descriptionPlaceholder')}
                     />
                   </div>
                   
                   {newParamType === 'string' && (
                     <div className="md:col-span-2">
                       <label className="block text-xs text-secondary mb-1">
-                        Enum Values (comma-separated)
+                        {t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.enumLabel')}
                       </label>
                       <input
                         type="text"
                         value={newParamEnum}
                         onChange={(e) => setNewParamEnum(e.target.value)}
                         className="w-full rounded-md border border-border bg-dark px-2 py-1 text-sm text-primary focus:border-accent focus:outline-none"
-                        placeholder="low, medium, high"
+                        placeholder={t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.enumPlaceholder')}
                       />
                     </div>
                   )}
@@ -545,7 +552,7 @@ export default function ApiConfigModal({
                         onChange={(e) => setNewParamRequired(e.target.checked)}
                         className="mr-2"
                       />
-                      Required parameter
+                      {t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.requiredLabel')}
                     </label>
                   </div>
                 </div>
@@ -556,7 +563,7 @@ export default function ApiConfigModal({
                     disabled={!newParamName.trim() || !newParamDesc.trim()}
                     className="rounded bg-accent px-3 py-1 text-xs font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                   >
-                    Add Parameter
+                    {t('dashboard.editor.agent.apiConfigModal.parameters.addParamForm.addButton')}
                   </button>
                 </div>
               </div>
@@ -570,7 +577,7 @@ export default function ApiConfigModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-secondary mb-1">
-                  HTTP Method
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.methodLabel')}
                 </label>
                 <select
                   value={config.api_config?.method || "GET"}
@@ -600,7 +607,7 @@ export default function ApiConfigModal({
               
               <div>
                 <label className="block text-sm font-medium text-secondary mb-1">
-                  API URL
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.urlLabel')}
                 </label>
                 <input
                   type="text"
@@ -622,23 +629,23 @@ export default function ApiConfigModal({
                     setConfig(updatedConfig);
                   }}
                   className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
-                  placeholder="https://api.example.com/users/{user_id}"
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.urlPlaceholder')}
                 />
                 <p className="mt-1 text-xs text-secondary">
-                  Use {"{parameter_name}"} syntax to include parameter values in the URL
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.urlHelpText')}
                 </p>
               </div>
             </div>
             
             {/* Headers */}
             <div>
-              <h4 className="text-sm font-medium text-primary mb-2">Headers</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">{t('dashboard.editor.agent.apiConfigModal.apiConfig.headersTitle')}</h4>
               <div className="border border-border rounded-md overflow-hidden mb-3">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-dark">
                     <tr>
-                      <th className="px-4 py-2 text-secondary">Name</th>
-                      <th className="px-4 py-2 text-secondary">Value</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.apiConfig.headersTable.headerName')}</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.apiConfig.headersTable.headerValue')}</th>
                       <th className="px-4 py-2 text-secondary"></th>
                     </tr>
                   </thead>
@@ -651,6 +658,7 @@ export default function ApiConfigModal({
                           <button
                             onClick={() => removeHeader(key)}
                             className="text-red-400 hover:text-red-300"
+                            title={t('dashboard.editor.agent.apiConfigModal.apiConfig.headersTable.removeHeaderTitle')}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -662,7 +670,7 @@ export default function ApiConfigModal({
                     {Object.keys(config.api_config?.headers || {}).length === 0 && (
                       <tr>
                         <td colSpan={3} className="px-4 py-4 text-secondary text-center italic">
-                          No headers defined yet
+                          {t('dashboard.editor.agent.apiConfigModal.apiConfig.headersTable.noHeaders')}
                         </td>
                       </tr>
                     )}
@@ -675,14 +683,14 @@ export default function ApiConfigModal({
                   type="text"
                   value={newHeaderKey}
                   onChange={(e) => setNewHeaderKey(e.target.value)}
-                  placeholder="Header name"
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.addHeaderForm.namePlaceholder')}
                   className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
                 />
                 <input
                   type="text"
                   value={newHeaderValue}
                   onChange={(e) => setNewHeaderValue(e.target.value)}
-                  placeholder="Header value"
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.addHeaderForm.valuePlaceholder')}
                   className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
                 />
                 <button
@@ -690,20 +698,20 @@ export default function ApiConfigModal({
                   disabled={!newHeaderKey.trim() || !newHeaderValue.trim()}
                   className="rounded bg-accent px-3 py-1 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                 >
-                  Add
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.addHeaderForm.addButton')}
                 </button>
               </div>
             </div>
             
             {/* Query Parameters */}
             <div>
-              <h4 className="text-sm font-medium text-primary mb-2">Query Parameters</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">{t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsTitle')}</h4>
               <div className="border border-border rounded-md overflow-hidden mb-3">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-dark">
                     <tr>
-                      <th className="px-4 py-2 text-secondary">Name</th>
-                      <th className="px-4 py-2 text-secondary">Value</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsTable.headerName')}</th>
+                      <th className="px-4 py-2 text-secondary">{t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsTable.headerValue')}</th>
                       <th className="px-4 py-2 text-secondary"></th>
                     </tr>
                   </thead>
@@ -716,6 +724,7 @@ export default function ApiConfigModal({
                           <button
                             onClick={() => removeQueryParam(key)}
                             className="text-red-400 hover:text-red-300"
+                            title={t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsTable.removeParamTitle')}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -727,7 +736,7 @@ export default function ApiConfigModal({
                     {Object.keys(config.api_config?.query_params || {}).length === 0 && (
                       <tr>
                         <td colSpan={3} className="px-4 py-4 text-secondary text-center italic">
-                          No query parameters defined yet
+                          {t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsTable.noParams')}
                         </td>
                       </tr>
                     )}
@@ -740,14 +749,14 @@ export default function ApiConfigModal({
                   type="text"
                   value={newQueryKey}
                   onChange={(e) => setNewQueryKey(e.target.value)}
-                  placeholder="Parameter name"
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.addQueryParamForm.namePlaceholder')}
                   className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
                 />
                 <input
                   type="text"
                   value={newQueryValue}
                   onChange={(e) => setNewQueryValue(e.target.value)}
-                  placeholder="Parameter value or {template}"
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.addQueryParamForm.valuePlaceholder')}
                   className="flex-1 rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
                 />
                 <button
@@ -755,66 +764,59 @@ export default function ApiConfigModal({
                   disabled={!newQueryKey.trim() || !newQueryValue.trim()}
                   className="rounded bg-accent px-3 py-1 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
                 >
-                  Add
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.addQueryParamForm.addButton')}
                 </button>
               </div>
               <p className="text-xs text-secondary mb-4">
-                Use {"{parameter_name}"} syntax to include parameter values in query parameters
+                {t('dashboard.editor.agent.apiConfigModal.apiConfig.queryParamsHelpText')}
               </p>
             </div>
             
             {/* Body Template */}
             {(config.api_config?.method === 'POST' || config.api_config?.method === 'PUT') && (
               <div>
-                <h4 className="text-sm font-medium text-primary mb-2">Body Template (JSON)</h4>
+                <h4 className="text-sm font-medium text-primary mb-2">{t('dashboard.editor.agent.apiConfigModal.apiConfig.bodyTemplateTitle')}</h4>
                 <textarea
                   value={bodyTemplateString}
                   onChange={(e) => setBodyTemplateString(e.target.value)}
                   className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary font-mono focus:border-accent focus:outline-none"
                   rows={6}
-                  placeholder='{
-  "name": "{task_name}",
-  "priority": "{priority}"
-}'
+                  placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.bodyTemplatePlaceholder')}
                 />
                 <div className="flex justify-end mt-1">
                   <button
                     onClick={updateBodyTemplate}
                     className="rounded bg-dark px-3 py-1 text-xs font-medium text-primary hover:bg-dark/80"
                   >
-                    Validate JSON
+                    {t('dashboard.editor.agent.apiConfigModal.apiConfig.validateJsonButton')}
                   </button>
                 </div>
                 <p className="text-xs text-secondary mt-1">
-                  Use {"{parameter_name}"} syntax to include parameter values in the body template
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.bodyTemplateHelpText')}
                 </p>
               </div>
             )}
             
             {/* Response Template */}
             <div>
-              <h4 className="text-sm font-medium text-primary mb-2">Response Template (JSON)</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">{t('dashboard.editor.agent.apiConfigModal.apiConfig.responseTemplateTitle')}</h4>
               <textarea
                 value={responseTemplateString}
                 onChange={(e) => setResponseTemplateString(e.target.value)}
                 className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary font-mono focus:border-accent focus:outline-none"
                 rows={6}
-                placeholder='{
-  "id": "task_123",
-  "name": "{task_name}",
-  "user_id": "{user_id}"
-}'
+                placeholder={t('dashboard.editor.agent.apiConfigModal.apiConfig.responseTemplatePlaceholder')}
               />
               <div className="flex justify-end mt-1">
                 <button
                   onClick={updateResponseTemplate}
                   className="rounded bg-dark px-3 py-1 text-xs font-medium text-primary hover:bg-dark/80"
                 >
-                  Validate JSON
+                  {t('dashboard.editor.agent.apiConfigModal.apiConfig.validateJsonButton')}
                 </button>
               </div>
               <p className="text-xs text-secondary mt-1">
-                Use {"{parameter_name}"} syntax to map parameters to the response template
+                {t('dashboard.editor.agent.apiConfigModal.apiConfig.responseTemplateHelpText')}
               </p>
             </div>
           </div>
@@ -826,13 +828,16 @@ export default function ApiConfigModal({
             onClick={onClose}
             className="rounded border border-border px-4 py-2 text-sm font-medium text-secondary hover:text-primary"
           >
-            Cancel
+            {t('dashboard.editor.agent.apiConfigModal.actions.cancelButton')}
           </button>
           <button
             onClick={handleSave}
             className="rounded bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80"
           >
-            {isEditing ? 'Update API Call' : 'Add API Call'}
+            {isEditing ?
+              t('dashboard.editor.agent.apiConfigModal.actions.updateButton') :
+              t('dashboard.editor.agent.apiConfigModal.actions.addButton')
+            }
           </button>
         </div>
       </div>

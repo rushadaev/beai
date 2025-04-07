@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { AppearanceSettings } from '../ChatbotEditor';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface AppearanceProps {
   initialSettings?: AppearanceSettings;
@@ -16,9 +17,10 @@ export default function Appearance({
   onPreviewUpdate,
   isSaving = false
 }: AppearanceProps) {
+  const { t } = useSafeTranslation();
   const [settings, setSettings] = useState<AppearanceSettings>(
     initialSettings || {
-      headerText: 'Chat with us',
+      headerText: t('dashboard.editor.appearance.defaults.headerText'),
       primaryColor: '#3b82f6',
       secondaryColor: '#1e3a8a',
       buttonColor: '#3b82f6',
@@ -83,10 +85,10 @@ export default function Appearance({
     <div className="space-y-6 pb-16 relative">
       <div>
         <h3 className="text-lg font-medium text-primary">
-          Appearance Settings
+          {t('dashboard.editor.appearance.title')}
         </h3>
         <p className="text-sm text-secondary">
-          Customize how your chatbot appears to users
+          {t('dashboard.editor.appearance.description')}
         </p>
       </div>
 
@@ -94,7 +96,7 @@ export default function Appearance({
         <div className="space-y-4">
           <div>
             <label htmlFor="headerText" className="block text-sm font-medium text-primary">
-              Header Text
+              {t('dashboard.editor.appearance.headerTextLabel')}
             </label>
             <input
               id="headerText"
@@ -107,7 +109,7 @@ export default function Appearance({
 
           <div>
             <label className="block text-sm font-medium text-primary">
-              Size
+              {t('dashboard.editor.appearance.sizeLabel')}
             </label>
             <div className="mt-1 flex space-x-2">
               {(['small', 'medium', 'large'] as const).map((size) => (
@@ -121,7 +123,7 @@ export default function Appearance({
                       : 'border border-border bg-dark text-primary hover:bg-dark/50'
                   }`}
                 >
-                  {size.charAt(0).toUpperCase() + size.slice(1)}
+                  {t(`dashboard.editor.appearance.size.${size}`)}
                 </button>
               ))}
             </div>
@@ -129,7 +131,7 @@ export default function Appearance({
 
           <div>
             <label className="block text-sm font-medium text-primary">
-              Placement
+              {t('dashboard.editor.appearance.placementLabel')}
             </label>
             <div className="mt-1 flex space-x-2">
               {(['left', 'center', 'right'] as const).map((placement) => (
@@ -143,7 +145,7 @@ export default function Appearance({
                       : 'border border-border bg-dark text-primary hover:bg-dark/50'
                   }`}
                 >
-                  {placement.charAt(0).toUpperCase() + placement.slice(1)}
+                  {t(`dashboard.editor.appearance.placement.${placement}`)}
                 </button>
               ))}
             </div>
@@ -153,7 +155,7 @@ export default function Appearance({
         <div className="space-y-4">
           <div>
             <label htmlFor="primaryColor" className="block text-sm font-medium text-primary">
-              Primary Color
+              {t('dashboard.editor.appearance.primaryColorLabel')}
             </label>
             <div className="mt-1 flex">
               <input
@@ -174,7 +176,7 @@ export default function Appearance({
 
           <div>
             <label htmlFor="secondaryColor" className="block text-sm font-medium text-primary">
-              Secondary Color
+              {t('dashboard.editor.appearance.secondaryColorLabel')}
             </label>
             <div className="mt-1 flex">
               <input
@@ -195,7 +197,7 @@ export default function Appearance({
 
           <div>
             <label htmlFor="buttonColor" className="block text-sm font-medium text-primary">
-              Button Color
+              {t('dashboard.editor.appearance.buttonColorLabel')}
             </label>
             <div className="mt-1 flex">
               <input
@@ -216,7 +218,7 @@ export default function Appearance({
 
           <div>
             <label htmlFor="buttonTextColor" className="block text-sm font-medium text-primary">
-              Button Text Color
+              {t('dashboard.editor.appearance.buttonTextColorLabel')}
             </label>
             <div className="mt-1 flex">
               <input
@@ -241,7 +243,7 @@ export default function Appearance({
       <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-card py-3 px-4">
         <div className="flex justify-between items-center">
           <p className="text-xs text-secondary italic">
-            Changes appear in the preview immediately.
+            {t('dashboard.editor.appearance.previewNote')}
           </p>
           <div className="flex space-x-2">
             <button
@@ -250,14 +252,14 @@ export default function Appearance({
               disabled={isSaving}
               className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80 disabled:opacity-50"
             >
-              {isSaving ? 'Saving...' : 'Apply Changes'}
+              {isSaving ? t('dashboard.editor.appearance.savingButton') : t('dashboard.editor.appearance.applyButton')}
             </button>
             <button
               type="button"
               className="rounded-md bg-dark border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-dark/80"
               onClick={() => window.dispatchEvent(new CustomEvent('open-install-modal'))}
             >
-              Install
+              {t('dashboard.editor.appearance.installButton')}
             </button>
           </div>
         </div>

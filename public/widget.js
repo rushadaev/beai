@@ -3,7 +3,20 @@
   window.beaiChatOriginal = window.BeAIChatWidget || function() {};
   
   // Keep track of chatbot configurations
-  const configs = {};
+  const configs = {
+    chatbotId: null,
+    appearance: {
+      // Default appearance settings
+      headerText: 'Chat with us',
+      primaryColor: '#3b82f6',
+      secondaryColor: '#1e3a8a',
+      buttonColor: '#3b82f6',
+      buttonTextColor: '#ffffff',
+      placement: 'right',
+      size: 'medium'
+    },
+    questions: [] // Suggestion questions
+  };
   
   // Command queue
   const queue = [];
@@ -15,12 +28,15 @@
     
     if (command === 'init') {
       const chatbotId = args[1];
+      const appearanceConfig = args[2] || {}; // Get appearance from 3rd arg
       
       // Store the configuration
       configs.chatbotId = chatbotId;
+      // Merge provided appearance with defaults
+      configs.appearance = { ...configs.appearance, ...appearanceConfig }; 
       
-      // First get the API URL and then load chatbot config
-      fetchWidgetConfig(chatbotId);
+      // Fetch initial widget config (like API URL) and then suggestion questions
+      fetchWidgetAndSuggestionConfig(chatbotId);
     } else {
       // Add to command queue to process later
       queue.push(args);
@@ -32,12 +48,14 @@
     for (let i = 0; i < window.beai.q.length; i++) {
       window.BeAIChatWidget.apply(this, window.beai.q[i]);
     }
+    // Clear the queue after processing
+    window.beai.q = []; 
   }
   
-  // Fetch widget configuration including API URL
-  async function fetchWidgetConfig(chatbotId) {
+  // Fetch widget configuration including API URL and Suggestion Questions
+  async function fetchWidgetAndSuggestionConfig(chatbotId) {
     try {
-      // Try to get the script URL, but this might fail when loaded from filesystem
+      // Try to get the script URL
       let baseUrl = '';
       try {
         const scriptElement = document.currentScript || 
@@ -53,79 +71,54 @@
       
       if (baseUrl) {
         try {
-          // Try to fetch config with appropriate CORS settings
-          const response = await fetch(`${baseUrl}/api/widget-config?chatbotId=${chatbotId}`, {
-            headers: {
-              'Accept': 'application/json'
-            }
+          // Fetch API URL config
+          const apiUrlResponse = await fetch(`${baseUrl}/api/widget-config?chatbotId=${chatbotId}`, {
+            headers: { 'Accept': 'application/json' }
           });
-          
-          if (response.ok) {
-            const widgetConfig = await response.json();
+          if (apiUrlResponse.ok) {
+            const widgetConfig = await apiUrlResponse.json();
             window.BEAI_API_URL = widgetConfig.apiUrl;
-            fetchChatbotConfig(chatbotId);
-            return;
+          } else {
+             throw new Error('Failed to fetch API URL config');
           }
         } catch (fetchError) {
-          console.warn('Error fetching widget config, using default:', fetchError);
+          console.warn('Error fetching widget config, using default API URL:', fetchError);
+          window.BEAI_API_URL = window.BEAI_API_URL || 'http://localhost:8234';
         }
+      } else {
+        // Fallback if base URL couldn't be determined
+         window.BEAI_API_URL = window.BEAI_API_URL || 'http://localhost:8234';
+      }
+
+      console.log('Using API URL:', window.BEAI_API_URL);
+      
+      // Now fetch suggestion questions from the agent endpoint
+      try {
+          const agentResponse = await fetch(`${window.BEAI_API_URL}/api/agents/${chatbotId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+          });
+
+          if (!agentResponse.ok) {
+            console.warn('Failed to fetch agent details for suggestions.');
+          } else {
+             const agentData = await agentResponse.json();
+             // Assuming suggestions are in agentData.config.suggestions
+             configs.questions = agentData.config?.suggestions?.filter(s => s.enabled).map(s => ({ id: s.id, text: s.text })) || [];
+             console.log('Fetched suggestions:', configs.questions);
+          }
+      } catch (agentFetchError) {
+          console.warn('Error fetching agent details for suggestions:', agentFetchError);
       }
       
-      // If we get here, either we couldn't determine the base URL or the fetch failed
-      // Just use a hardcoded default API URL
-      window.BEAI_API_URL = window.BEAI_API_URL || 'http://localhost:8234';
-      console.log('Using API URL:', window.BEAI_API_URL);
-      fetchChatbotConfig(chatbotId);
+      // Load the UI now that we have the API URL and suggestions (if any)
+      loadChatUI();
+
     } catch (error) {
       console.error('Error in widget config setup:', error);
-      window.BEAI_API_URL = 'http://localhost:8234';
-      fetchChatbotConfig(chatbotId);
-    }
-  }
-  
-  // Fetch chatbot configuration
-  async function fetchChatbotConfig(chatbotId) {
-    try {
-      const apiUrl = window.BEAI_API_URL;
-      
-      console.log(`Fetching chatbot config from: ${apiUrl}/api/agents/${chatbotId}`);
-      
-      // Add CORS handling
-      const response = await fetch(`${apiUrl}/api/agents/${chatbotId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch chatbot configuration');
-      }
-      
-      const data = await response.json();
-      
-      // Store the configuration
-      configs.config = data.config;
-      
-      // Get appearance settings from server or use defaults
-      configs.appearance = {
-        headerText: 'Chat with us',
-        primaryColor: '#3b82f6',
-        secondaryColor: '#1e3a8a',
-        buttonColor: '#3b82f6',
-        buttonTextColor: '#ffffff',
-        placement: 'right',
-        size: 'medium'
-      };
-      
-      // Get suggestion questions
-      configs.questions = [];
-      
-      // Now load the chat UI
-      loadChatUI();
-    } catch (error) {
-      console.error('Error fetching chatbot configuration:', error);
+       // Ensure API URL has a default even on errors
+      window.BEAI_API_URL = window.BEAI_API_URL || 'http://localhost:8234'; 
+      loadChatUI(); // Attempt to load UI even if config fails
     }
   }
   
@@ -146,18 +139,24 @@
         border: none;
         cursor: pointer;
         outline: none;
+        padding: 0; /* Added */
+        margin: 0; /* Added */
       }
       
       /* Widget container */
       .beai-widget-container {
         position: fixed;
         bottom: 20px;
-        right: 20px;
         z-index: 9999;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
       }
+
+      /* Placement specific styles */
+      .beai-widget-container.placement-left { right: auto; left: 20px; align-items: flex-start; }
+      .beai-widget-container.placement-right { left: auto; right: 20px; align-items: flex-end; }
+      /* Center placement might need more complex handling depending on layout */
       
       /* Toggle button */
       .beai-toggle-button {
@@ -173,8 +172,8 @@
       
       /* Chat window */
       .beai-chat-window {
-        width: 320px;
-        max-height: 500px;
+        /* Size handled by class */
+        max-height: 600px; /* Increased max height */
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -183,6 +182,11 @@
         background-color: #fff;
         margin-bottom: 10px;
       }
+
+      /* Size specific styles */
+      .beai-chat-window.size-small { width: 300px; }
+      .beai-chat-window.size-medium { width: 360px; }
+      .beai-chat-window.size-large { width: 400px; }
       
       /* Chat header */
       .beai-chat-header {
@@ -191,6 +195,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        color: #ffffff; /* Ensure text is white */
+      }
+
+      .beai-chat-header button {
+         color: #ffffff; /* Make close button white */
+         background: transparent !important; /* Override any button bg */
       }
       
       /* Messages container */
@@ -198,7 +208,7 @@
         flex: 1;
         overflow-y: auto;
         padding: 15px;
-        height: 300px;
+        height: 400px; /* Increased height */
         background-color: #f8f9fa;
       }
       
@@ -213,8 +223,8 @@
       
       .beai-user-message {
         margin-left: auto;
-        background-color: #3b82f6;
-        color: white;
+        background-color: #3b82f6; /* Will be overridden by appearance */
+        color: white; /* Will be overridden by appearance */
       }
       
       .beai-bot-message {
@@ -242,8 +252,8 @@
       .beai-send-button {
         padding: 0 15px;
         margin-left: 10px;
-        background-color: #3b82f6;
-        color: white;
+        background-color: #3b82f6; /* Will be overridden by appearance */
+        color: white; /* Will be overridden by appearance */
         border-radius: 20px;
         font-weight: 600;
       }
@@ -313,18 +323,19 @@
     document.body.appendChild(container);
     
     // Initialize chat UI
+    // Pass the whole configs object which now includes appearance
     const chatWidget = new ChatWidget(container, configs);
     chatWidget.render();
   }
   
   // Chat widget class
   class ChatWidget {
-    constructor(container, configs) {
+    constructor(container, configs) { // Receives the whole configs object
       this.container = container;
-      this.configs = configs;
+      this.configs = configs; // Includes chatbotId, appearance, questions
       this.messages = [
         {
-          text: 'Hello! How can I help you today?',
+          text: 'Hello! How can I help you today?', // TODO: Add translation/customization
           sender: 'bot',
           timestamp: new Date()
         }
@@ -334,12 +345,12 @@
     }
     
     render() {
-      // Create widget container
+      // Create widget container & apply placement
       this.widgetContainer = document.createElement('div');
-      this.widgetContainer.className = 'beai-widget-container';
+      this.widgetContainer.className = `beai-widget-container placement-${this.configs.appearance.placement}`;
       this.container.appendChild(this.widgetContainer);
       
-      // Create toggle button
+      // Create toggle button & apply colors
       this.toggleButton = document.createElement('button');
       this.toggleButton.className = 'beai-toggle-button';
       this.toggleButton.style.backgroundColor = this.configs.appearance.buttonColor;
@@ -352,17 +363,17 @@
       this.toggleButton.addEventListener('click', () => this.toggleChat());
       this.widgetContainer.appendChild(this.toggleButton);
       
-      // Create chat window (initially hidden)
+      // Create chat window (initially hidden) & apply size
       this.chatWindow = document.createElement('div');
-      this.chatWindow.className = 'beai-chat-window';
+      this.chatWindow.className = `beai-chat-window size-${this.configs.appearance.size}`;
       this.chatWindow.style.display = 'none';
       this.widgetContainer.appendChild(this.chatWindow);
       
-      // Create chat header
+      // Create chat header & apply colors
       const chatHeader = document.createElement('div');
       chatHeader.className = 'beai-chat-header';
       chatHeader.style.background = `linear-gradient(to right, ${this.configs.appearance.primaryColor}, ${this.configs.appearance.secondaryColor})`;
-      chatHeader.style.color = '#ffffff';
+      // Text color set via CSS
       chatHeader.innerHTML = `
         <span>${this.configs.appearance.headerText}</span>
         <button class="beai-close-button">
@@ -437,6 +448,7 @@
         const messageElement = document.createElement('div');
         messageElement.className = `beai-message ${message.sender === 'user' ? 'beai-user-message' : 'beai-bot-message'}`;
         
+        // Apply user message colors from appearance
         if (message.sender === 'user') {
           messageElement.style.backgroundColor = this.configs.appearance.buttonColor;
           messageElement.style.color = this.configs.appearance.buttonTextColor;
@@ -522,7 +534,7 @@
           body: JSON.stringify({
             agent_id: this.configs.chatbotId,
             message: text,
-            stream: false
+            stream: false // Assuming no streaming for widget for now
           }),
         });
         
@@ -545,7 +557,7 @@
         
         // Add error message
         const errorMessage = {
-          text: 'Sorry, I encountered an error processing your request.',
+          text: 'Sorry, I encountered an error processing your request.', // TODO: Translate
           sender: 'bot',
           timestamp: new Date()
         };

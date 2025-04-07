@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const { t } = useSafeTranslation();
   
   const handleLogout = async () => {
     await signOut();
@@ -23,7 +25,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex min-h-screen items-center justify-center bg-dark">
         <div className="flex flex-col items-center">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-accent"></div>
-          <p className="mt-4 text-secondary">Loading your dashboard...</p>
+          <p className="mt-4 text-secondary">{t('dashboard.layout.loading')}</p>
         </div>
       </div>
     );
@@ -41,7 +43,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="border-b border-border bg-card shadow-sm">
           <div className="flex h-14 items-center justify-between px-4">
-            <h1 className="text-xl font-bold text-primary">Dashboard</h1>
+            <h1 className="text-xl font-bold text-primary">{t('dashboard.layout.title')}</h1>
             <div className="flex items-center">
               <span className="mr-4 text-sm text-secondary">
                 {user.email || 'User'}
@@ -50,7 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={handleLogout}
                 className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-dark hover:bg-accent/80"
               >
-                Logout
+                {t('dashboard.layout.logout')}
               </button>
             </div>
           </div>

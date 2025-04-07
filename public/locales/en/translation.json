@@ -159,5 +159,117 @@
   },
   "footer": {
     "copyright": "© 2024 VibeCraft. All rights reserved."
+  },
+  "dashboard": {
+    "layout": {
+      "loading": "Loading your dashboard...",
+      "title": "Dashboard",
+      "logout": "Logout"
+    },
+    "sidebar": {
+      "home": "Home",
+      "insights": "Insights",
+      "history": "History",
+      "chatbots": "Chatbots"
+    },
+    "editor": {
+      "tabs": {
+        "agent": "Agent",
+        "appearance": "Appearance",
+        "rules": "Rules",
+        "suggestions": "Suggestions"
+      },
+      "preview": {
+        "title": "Live Preview"
+      },
+      "appearance": {
+        "title": "Appearance Settings",
+        "description": "Customize how your chatbot appears to users",
+        "defaults": {
+          "headerText": "Chat with us"
+        },
+        "headerTextLabel": "Header Text",
+        "sizeLabel": "Size",
+        "size": {
+          "small": "Small",
+          "medium": "Medium",
+          "large": "Large"
+        },
+        "placementLabel": "Placement",
+        "placement": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        },
+        "primaryColorLabel": "Primary Color",
+        "secondaryColorLabel": "Secondary Color",
+        "buttonColorLabel": "Button Color",
+        "buttonTextColorLabel": "Button Text Color",
+        "previewNote": "Changes appear in the preview immediately.",
+        "applyButton": "Apply Changes",
+        "savingButton": "Saving...",
+        "installButton": "Install"
+      },
+      "rules": {
+        "title": "Chatbot Rules",
+        "description": "Define rules that will guide how your chatbot responds to users",
+        "defaults": {
+          "0": "Be friendly and helpful",
+          "1": "Do not share personal information",
+          "2": "Keep responses concise"
+        },
+        "addPlaceholder": "Add a new rule...",
+        "addButton": "Add",
+        "noRules": "No rules yet. Add some to guide your chatbot behavior.",
+        "saveEditButton": "Save",
+        "cancelEditButton": "Cancel",
+        "moveUpTitle": "Move up",
+        "moveDownTitle": "Move down",
+        "editTitle": "Edit",
+        "deleteTitle": "Delete",
+        "previewNote": "Changes appear in the preview immediately.",
+        "applyButton": "Apply Changes",
+        "savingButton": "Saving...",
+        "installButton": "Install"
+      },
+      "suggestions": {
+        "title": "Suggested Questions",
+        "description": "Add questions that will appear as suggestions to your users",
+        "defaults": {
+          "0": "How can I get started?",
+          "1": "What are your business hours?",
+          "2": "Do you offer support?"
+        },
+        "addPlaceholder": "Add a new suggested question...",
+        "addButton": "Add",
+        "noSuggestions": "No suggested questions yet. Add some to help your users get started.",
+        "saveEditButton": "Save",
+        "cancelEditButton": "Cancel",
+        "moveUpTitle": "Move up",
+        "moveDownTitle": "Move down",
+        "editTitle": "Edit",
+        "deleteTitle": "Delete",
+        "previewNote": "Changes appear in the preview immediately.",
+        "applyButton": "Apply Changes",
+        "savingButton": "Saving...",
+        "installButton": "Install"
+      },
+      "agent": {
+        "title": "Agent Configuration",
+        "systemSettings": {
+          "title": "System Settings",
+          "systemNameLabel": "System Name",
+          "defaultModelLabel": "Default Model",
+          "contextClassTitle": "Context Class",
+          "contextClassNameLabel": "Context Class Name",
+          "contextAttributesTitle": "Context Attributes",
+          "addAttributeButton": "+ Add Attribute",
+          "noAttributes": "No attributes defined",
+          "attributeNamePlaceholder": "Name",
+          "attributeDefaultPlaceholder": "Default (optional)",
+          "removeAttributeTitle": "Remove Attribute"
+        }
+      }
+    }
   }
 } 

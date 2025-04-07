@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface MenuItem {
   name: string;
@@ -15,10 +16,11 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuth();
+  const { t } = useSafeTranslation();
   
   const menuItems: MenuItem[] = [
     {
-      name: 'Home',
+      name: t('dashboard.sidebar.home'),
       path: '/dashboard',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -27,7 +29,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Insights',
+      name: t('dashboard.sidebar.insights'),
       path: '/dashboard/insights',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -36,7 +38,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'History',
+      name: t('dashboard.sidebar.history'),
       path: '/dashboard/history',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -45,7 +47,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Chatbots',
+      name: t('dashboard.sidebar.chatbots'),
       path: '/dashboard/chatbots',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -83,7 +85,7 @@ export default function Sidebar() {
       <div className="mt-4 flex flex-col space-y-2 px-2">
         {menuItems.map((item) => (
           <Link
-            key={item.name}
+            key={item.path}
             href={item.path}
             className={`flex items-center rounded-md px-3 py-2 ${
               pathname === item.path || 
