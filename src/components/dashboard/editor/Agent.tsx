@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
+import ApiConfigModal, { ApiToolConfig } from './ApiConfigModal';
 
 interface AgentAttribute {
   name: string;
@@ -20,6 +21,15 @@ interface AgentTool {
       enum?: string[];
     }>;
     required: string[];
+    additionalProperties?: boolean;
+  };
+  api_config?: {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    url: string;
+    headers?: Record<string, string>;
+    query_params?: Record<string, string>;
+    body_template?: Record<string, any>;
+    response_template?: Record<string, any>;
   };
 }
 
@@ -77,6 +87,9 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
 
 const VALID_TYPES = ["str", "int", "float", "bool", "list", "dict", "List[str]", "Dict[str, Any]"];
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
+const BUILT_IN_TOOLS = ["web_search", "file_search"];
+const TOOL_PARAMETER_TYPES = ["string", "number", "integer", "boolean", "array", "object"];
+const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"];
 
 export default function Agent({ 
   initialConfig, 
@@ -95,6 +108,11 @@ export default function Agent({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [showToolModal, setShowToolModal] = useState(false);
+  const [currentToolType, setCurrentToolType] = useState<'built-in' | 'api-call' | 'agent' | null>(null);
+  const [editingToolIndex, setEditingToolIndex] = useState<number | null>(null);
+  const [showApiConfigModal, setShowApiConfigModal] = useState(false);
+  const [currentApiConfig, setCurrentApiConfig] = useState<ApiToolConfig | null>(null);
   
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   
@@ -330,6 +348,107 @@ export default function Agent({
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
+  };
+
+  const addTool = (agentId: string, toolType: 'built-in' | 'api-call' | 'agent') => {
+    setCurrentToolType(toolType);
+    
+    if (toolType === 'api-call') {
+      setCurrentApiConfig({
+        name: "",
+        description: "",
+        parameters: {
+          type: "object",
+          properties: {},
+          required: [],
+          additionalProperties: false
+        },
+        api_config: {
+          method: "GET",
+          url: "",
+          headers: {},
+          query_params: {},
+          body_template: {},
+          response_template: {}
+        }
+      });
+      setShowApiConfigModal(true);
+    } else {
+      setShowToolModal(true);
+    }
+    
+    setEditingToolIndex(null);
+  };
+  
+  const handleAddTool = (agentId: string, tool: string | AgentTool) => {
+    const agent = config.agents.find(a => a.id === agentId);
+    if (!agent) return;
+    
+    const newTools = [...agent.tools, tool];
+    updateAgent(agentId, { tools: newTools });
+    setShowToolModal(false);
+  };
+  
+  const editTool = (agentId: string, toolIndex: number) => {
+    const agent = config.agents.find(a => a.id === agentId);
+    if (!agent) return;
+    
+    const tool = agent.tools[toolIndex];
+    
+    if (typeof tool === 'string') {
+      if (tool.startsWith('agent_')) {
+        setCurrentToolType('agent');
+      } else {
+        setCurrentToolType('built-in');
+      }
+      setEditingToolIndex(toolIndex);
+      setShowToolModal(true);
+    } else {
+      // It's an API call tool
+      setCurrentToolType('api-call');
+      setEditingToolIndex(toolIndex);
+      setCurrentApiConfig(tool as unknown as ApiToolConfig);
+      setShowApiConfigModal(true);
+    }
+  };
+  
+  const updateTool = (agentId: string, toolIndex: number, tool: string | AgentTool) => {
+    const agent = config.agents.find(a => a.id === agentId);
+    if (!agent) return;
+    
+    const newTools = [...agent.tools];
+    newTools[toolIndex] = tool;
+    updateAgent(agentId, { tools: newTools });
+    setShowToolModal(false);
+  };
+  
+  const removeTool = (agentId: string, toolIndex: number) => {
+    const agent = config.agents.find(a => a.id === agentId);
+    if (!agent) return;
+    
+    const newTools = [...agent.tools];
+    newTools.splice(toolIndex, 1);
+    updateAgent(agentId, { tools: newTools });
+  };
+
+  const handleSaveApiConfig = (apiConfig: ApiToolConfig) => {
+    const activeAgentId = config.agents.find(a => a.id === activeAgent)?.id;
+    if (!activeAgentId) return;
+    
+    const agentTool: AgentTool = {
+      name: apiConfig.name,
+      description: apiConfig.description,
+      parameters: apiConfig.parameters,
+      api_config: apiConfig.api_config
+    };
+    
+    if (editingToolIndex !== null) {
+      updateTool(activeAgentId, editingToolIndex, agentTool);
+    } else {
+      handleAddTool(activeAgentId, agentTool);
+    }
+    
+    setShowApiConfigModal(false);
   };
 
   return (
@@ -600,6 +719,131 @@ export default function Agent({
                       </div>
                     )}
                   </div>
+                  
+                  {/* Tools Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium text-secondary">
+                        Agent Tools
+                      </label>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => addTool(agent.id, 'built-in')}
+                          className="text-xs px-2 py-1 rounded bg-dark hover:bg-dark/80 text-primary"
+                        >
+                          + Built-in Tool
+                        </button>
+                        <button
+                          onClick={() => addTool(agent.id, 'api-call')}
+                          className="text-xs px-2 py-1 rounded bg-dark hover:bg-dark/80 text-primary"
+                        >
+                          + API Call
+                        </button>
+                        <button
+                          onClick={() => addTool(agent.id, 'agent')}
+                          className="text-xs px-2 py-1 rounded bg-dark hover:bg-dark/80 text-primary"
+                        >
+                          + Agent Tool
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {agent.tools.length === 0 ? (
+                      <p className="text-sm text-secondary italic">No tools defined</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {agent.tools.map((tool, index) => (
+                          <div key={index} className="rounded-md border border-border bg-dark p-3">
+                            {typeof tool === 'string' ? (
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <span className="text-xs bg-accent/20 rounded px-2 py-1 text-accent">
+                                    {tool.startsWith('agent_') ? 'Agent' : 'Built-in'}
+                                  </span>
+                                  <span className="ml-2 text-sm text-primary">
+                                    {tool}
+                                  </span>
+                                </div>
+                                <div>
+                                  <button
+                                    onClick={() => editTool(agent.id, index)}
+                                    className="text-secondary hover:text-primary mr-2"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => removeTool(agent.id, index)}
+                                    className="text-red-400 hover:text-red-300"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <span className="text-xs bg-accent/20 rounded px-2 py-1 text-accent">
+                                      API Call
+                                    </span>
+                                    <span className="ml-2 text-sm text-primary">
+                                      {(tool as AgentTool).name}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <button
+                                      onClick={() => editTool(agent.id, index)}
+                                      className="text-secondary hover:text-primary mr-2"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() => removeTool(agent.id, index)}
+                                      className="text-red-400 hover:text-red-300"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                {(tool as AgentTool).description && (
+                                  <div className="text-sm text-secondary">
+                                    {(tool as AgentTool).description}
+                                  </div>
+                                )}
+                                
+                                {/* Parameter Summary */}
+                                {(tool as AgentTool).parameters && Object.keys((tool as AgentTool).parameters?.properties || {}).length > 0 && (
+                                  <div className="mt-1 text-xs">
+                                    <span className="text-secondary">Parameters: </span>
+                                    <span className="text-primary">{Object.keys((tool as AgentTool).parameters?.properties || {}).join(", ")}</span>
+                                  </div>
+                                )}
+                                
+                                {/* API Config Summary */}
+                                {(tool as AgentTool).api_config && (
+                                  <div className="mt-1 text-xs">
+                                    <span className="text-secondary">API: </span>
+                                    <span className="text-primary">
+                                      {(tool as AgentTool).api_config?.method} {(tool as AgentTool).api_config?.url}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -745,6 +989,157 @@ export default function Agent({
           </button>
         </div>
       </div>
+      
+      {/* Tool Selection Modal */}
+      {showToolModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-primary">
+                {editingToolIndex !== null ? 'Edit Tool' : 'Add Tool'}
+              </h3>
+              <button 
+                onClick={() => setShowToolModal(false)}
+                className="text-secondary hover:text-primary"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Tool Type Selection */}
+            {editingToolIndex === null && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-secondary mb-1">
+                  Tool Type
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setCurrentToolType('built-in')}
+                    className={`p-2 rounded border ${
+                      currentToolType === 'built-in' 
+                        ? 'border-accent bg-accent/10 text-accent' 
+                        : 'border-border text-secondary hover:text-primary'
+                    }`}
+                  >
+                    Built-in Tool
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentToolType('api-call');
+                      setShowToolModal(false);
+                      setCurrentApiConfig({
+                        name: "",
+                        description: "",
+                        parameters: {
+                          type: "object",
+                          properties: {},
+                          required: [],
+                          additionalProperties: false
+                        },
+                        api_config: {
+                          method: "GET",
+                          url: "",
+                          headers: {},
+                          query_params: {},
+                          body_template: {},
+                          response_template: {}
+                        }
+                      });
+                      setShowApiConfigModal(true);
+                    }}
+                    className={`p-2 rounded border ${
+                      currentToolType === 'api-call' 
+                        ? 'border-accent bg-accent/10 text-accent' 
+                        : 'border-border text-secondary hover:text-primary'
+                    }`}
+                  >
+                    API Call
+                  </button>
+                  <button
+                    onClick={() => setCurrentToolType('agent')}
+                    className={`p-2 rounded border ${
+                      currentToolType === 'agent' 
+                        ? 'border-accent bg-accent/10 text-accent' 
+                        : 'border-border text-secondary hover:text-primary'
+                    }`}
+                  >
+                    Agent Tool
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Built-in Tool Selection */}
+            {currentToolType === 'built-in' && (
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-1">
+                  Select Built-in Tool
+                </label>
+                <select
+                  className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
+                  onChange={(e) => {
+                    const activeAgentId = config.agents.find(a => a.id === activeAgent)?.id;
+                    if (activeAgentId && e.target.value) {
+                      if (editingToolIndex !== null) {
+                        updateTool(activeAgentId, editingToolIndex, e.target.value);
+                      } else {
+                        handleAddTool(activeAgentId, e.target.value);
+                      }
+                    }
+                  }}
+                >
+                  <option value="">Select a tool...</option>
+                  {BUILT_IN_TOOLS.map(tool => (
+                    <option key={tool} value={tool}>{tool}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            {/* Agent Tool Selection */}
+            {currentToolType === 'agent' && (
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-1">
+                  Select Agent to Use as Tool
+                </label>
+                <select
+                  className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
+                  onChange={(e) => {
+                    const activeAgentId = config.agents.find(a => a.id === activeAgent)?.id;
+                    if (activeAgentId && e.target.value) {
+                      const agentToolName = `agent_${e.target.value}`;
+                      if (editingToolIndex !== null) {
+                        updateTool(activeAgentId, editingToolIndex, agentToolName);
+                      } else {
+                        handleAddTool(activeAgentId, agentToolName);
+                      }
+                    }
+                  }}
+                >
+                  <option value="">Select an agent...</option>
+                  {config.agents
+                    .filter(a => a.id !== activeAgent)
+                    .map(agent => (
+                      <option key={agent.id} value={agent.id}>{agent.name}</option>
+                    ))
+                  }
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* API Config Modal */}
+      <ApiConfigModal
+        isOpen={showApiConfigModal}
+        onClose={() => setShowApiConfigModal(false)}
+        apiConfig={currentApiConfig}
+        onSave={handleSaveApiConfig}
+        isEditing={editingToolIndex !== null}
+      />
     </div>
   );
 }

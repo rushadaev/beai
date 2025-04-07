@@ -232,7 +232,7 @@ export default function ChatbotEditor({
   onUpdateAgent,
   isSaving = false
 }: ChatbotEditorProps) {
-  const [activeTab, setActiveTab] = useState('appearance');
+  const [activeTab, setActiveTab] = useState('agent');
   const [messages, setMessages] = useState<Message[]>([
     {
       text: 'Hello! How can I help you today?',
@@ -298,10 +298,10 @@ export default function ChatbotEditor({
   }, [initialSettings]);
   
   const tabs: EditorTab[] = [
+    { id: 'agent', label: 'Agent' },
     { id: 'appearance', label: 'Appearance' },
     { id: 'rules', label: 'Rules' },
-    { id: 'suggestions', label: 'Suggestions' },
-    { id: 'agent', label: 'Agent' }
+    { id: 'suggestions', label: 'Suggestions' }
   ];
   
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -366,7 +366,7 @@ export default function ChatbotEditor({
       // Use simulated response for other tabs
       setTimeout(() => {
         const botMessage = {
-          text: `I received your message: "${inputText}". This is a simulated response.`,
+          text: `I received your message: "${inputText}". This is a simulated response. Make sure you saved your agent before sending a message to get a real response.`,
           sender: 'bot' as const,
           timestamp: new Date()
         };
