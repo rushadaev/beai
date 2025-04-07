@@ -5,18 +5,18 @@ export default function HowItWorks() {
   const steps = [
     {
       number: 1,
-      title: "Design Your Agent",
-      description: "Use our visual node constructor to design your agent's workflow with simple drag-and-drop tools."
+      title: "Configure Your Agent System",
+      description: "Define your system settings, context class, and create specialized agents with specific instructions."
     },
     {
       number: 2,
-      title: "Add Tools & Knowledge",
-      description: "Connect pre-built nodes for different functionalities and add your custom knowledge sources."
+      title: "Add Tools & API Integrations",
+      description: "Extend your agents with built-in tools, create custom API calls, and set up agent-to-agent handoffs."
     },
     {
       number: 3,
-      title: "Deploy Anywhere",
-      description: "Deploy your agent to your website or Telegram bot with a simple embed code or integration."
+      title: "Test & Deploy",
+      description: "Test your agent system with the built-in testing interface, then deploy with simple API endpoints."
     }
   ];
 
@@ -25,8 +25,8 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader 
           eyebrow="How It Works"
-          title="Create your AI agent in three simple steps"
-          description="No coding required - just drag, drop, and deploy"
+          title="Build your multi-agent system in three steps"
+          description="Create sophisticated AI systems with powerful API integrations"
         />
 
         <div className="mt-16">

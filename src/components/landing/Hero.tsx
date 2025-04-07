@@ -11,18 +11,18 @@ export default function Hero() {
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-primary sm:text-6xl">
-            <span className="block">AI Agents <span className="text-accent">Builder</span></span>
-            <span className="block mt-2 text-secondary">No Code Required</span>
+            <span className="block">Multi-Agent <span className="text-accent">Constructor</span></span>
+            <span className="block mt-2 text-secondary">Powerful API Integrations</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-xl text-secondary">
-            Create intelligent AI agents using our visual node constructor. Build, deploy, and manage custom assistants for your website or Telegram bot without writing a single line of code.
+            Build advanced AI agent systems with powerful API integrations, multi-agent collaboration, and custom tools - all through an intuitive no-code interface.
           </p>
           <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0 justify-center">
             <Link
               href={user ? "/dashboard" : "/register"}
               className="rounded-md bg-accent px-8 py-3 text-base font-medium text-dark hover:bg-accent/80 transition-colors"
             >
-              Build Your Agent
+              Create Your Agent System
             </Link>
             <Link
               href={user ? "/dashboard" : "/login"}

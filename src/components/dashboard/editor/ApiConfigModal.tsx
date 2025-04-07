@@ -22,8 +22,8 @@ export interface ApiToolConfig {
     url: string;
     headers?: Record<string, string>;
     query_params?: Record<string, string>;
-    body_template?: Record<string, any>;
-    response_template?: Record<string, any>;
+    body_template?: Record<string, unknown>;
+    response_template?: Record<string, unknown>;
   };
 }
 
@@ -154,9 +154,10 @@ export default function ApiConfigModal({
     const updatedConfig = {...config};
     if (!updatedConfig.parameters) return;
     
-    // Remove from properties
-    const { [paramName]: removedParam, ...restProperties } = updatedConfig.parameters.properties;
-    updatedConfig.parameters.properties = restProperties;
+    // Remove from properties using a more direct approach without unused variables
+    updatedConfig.parameters.properties = Object.entries(updatedConfig.parameters.properties)
+      .filter(([key]) => key !== paramName)
+      .reduce((obj, [key, value]) => ({...obj, [key]: value}), {});
     
     // Remove from required if it exists
     if (updatedConfig.parameters.required.includes(paramName)) {
@@ -197,8 +198,10 @@ export default function ApiConfigModal({
     const updatedConfig = {...config};
     if (!updatedConfig.api_config?.headers) return;
     
-    const { [headerKey]: removedHeader, ...restHeaders } = updatedConfig.api_config.headers;
-    updatedConfig.api_config.headers = restHeaders;
+    // Remove header using a more direct approach without unused variables
+    updatedConfig.api_config.headers = Object.entries(updatedConfig.api_config.headers)
+      .filter(([key]) => key !== headerKey)
+      .reduce((obj, [key, value]) => ({...obj, [key]: value}), {});
     
     setConfig(updatedConfig);
   };
@@ -232,8 +235,10 @@ export default function ApiConfigModal({
     const updatedConfig = {...config};
     if (!updatedConfig.api_config?.query_params) return;
     
-    const { [queryKey]: removedParam, ...restParams } = updatedConfig.api_config.query_params;
-    updatedConfig.api_config.query_params = restParams;
+    // Remove query param using a more direct approach without unused variables
+    updatedConfig.api_config.query_params = Object.entries(updatedConfig.api_config.query_params)
+      .filter(([key]) => key !== queryKey)
+      .reduce((obj, [key, value]) => ({...obj, [key]: value}), {});
     
     setConfig(updatedConfig);
   };
@@ -256,7 +261,7 @@ export default function ApiConfigModal({
       updatedConfig.api_config.body_template = parsedBody;
       setConfig(updatedConfig);
     } catch (e) {
-      alert("Invalid JSON for body template");
+      alert(`Invalid JSON for body template: ${e instanceof Error ? e.message : String(e)}`);
     }
   };
   
@@ -278,7 +283,7 @@ export default function ApiConfigModal({
       updatedConfig.api_config.response_template = parsedResponse;
       setConfig(updatedConfig);
     } catch (e) {
-      alert("Invalid JSON for response template");
+      alert(`Invalid JSON for response template: ${e instanceof Error ? e.message : String(e)}`);
     }
   };
   
@@ -304,7 +309,7 @@ export default function ApiConfigModal({
         config.api_config!.response_template = JSON.parse(responseTemplateString);
       }
     } catch (e) {
-      alert("Invalid JSON in templates");
+      alert(`Invalid JSON in templates: ${e instanceof Error ? e.message : String(e)}`);
       return;
     }
     

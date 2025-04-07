@@ -28,8 +28,8 @@ interface AgentTool {
     url: string;
     headers?: Record<string, string>;
     query_params?: Record<string, string>;
-    body_template?: Record<string, any>;
-    response_template?: Record<string, any>;
+    body_template?: Record<string, unknown>;
+    response_template?: Record<string, unknown>;
   };
 }
 
@@ -88,8 +88,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
 const VALID_TYPES = ["str", "int", "float", "bool", "list", "dict", "List[str]", "Dict[str, Any]"];
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
 const BUILT_IN_TOOLS = ["web_search", "file_search"];
-const TOOL_PARAMETER_TYPES = ["string", "number", "integer", "boolean", "array", "object"];
-const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"];
+
 
 export default function Agent({ 
   initialConfig, 
