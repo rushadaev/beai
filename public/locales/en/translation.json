@@ -1,0 +1,163 @@
+{
+  "header": {
+    "title": "Header Placeholder",
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "faq": "FAQ"
+    },
+    "auth": {
+      "dashboard": "Dashboard",
+      "login": "Login",
+      "signUp": "Sign Up"
+    }
+  },
+  "hero": {
+    "title": {
+      "line1": "Multi-Agent",
+      "accent": "Constructor",
+      "line2": "Powerful API Integrations"
+    },
+    "subtitle": "Build advanced AI agent systems with powerful API integrations, multi-agent collaboration, and custom tools - all through an intuitive no-code interface.",
+    "cta": {
+      "create": "Create Your Agent System",
+      "tryFree": "Try for Free"
+    }
+  },
+  "faq": {
+    "header": {
+      "eyebrow": "Interactive Demo",
+      "title": "See Agents in Action",
+      "description": "Explore real-world examples of what your AI agents can accomplish"
+    },
+    "demos": {
+      "knowledgeAgent": {
+        "title": "Document Search & Memory",
+        "exchanges": [
+          {
+            "user": "How do I set up document search for my product manuals?",
+            "agent": "I'd be happy to explain! You can add the 'File Search' tool to your agent. Upload your documents to create a searchable database, and the agent will find relevant information when asked."
+          },
+          {
+            "user": "Great, I've done that. What did I ask about pricing earlier?",
+            "agent": "Looking at our conversation history... You previously asked about Enterprise tier pricing. The File Search tool found in your 'pricing.pdf' document that it starts at $99/month."
+          },
+          {
+            "user": "Perfect, thanks!",
+            "agent": "You're welcome! The built-in conversation memory helps me keep track of our discussion, while the File Search tool finds specific details from your documents."
+          }
+        ]
+      },
+      "researchAgent": {
+        "title": "Web Research & Task Handoff",
+        "exchanges": [
+          {
+            "user": "I need to create an agent that researches AI trends and summarizes them.",
+            "agent": "That's straightforward! Create a 'research agent' with the 'Web Search' tool enabled so it can find the latest information about AI trends online."
+          },
+          {
+            "user": "How can I make it provide just a summary?",
+            "agent": "After your research agent gathers information using Web Search, set it up to pass those findings to a 'summary agent'. In the instructions for the summary agent, specify that its job is to condense information into brief highlights."
+          },
+          {
+            "user": "So one agent does the research and another creates the summary?",
+            "agent": "Exactly! That's the beauty of a multi-agent system. Each agent does what it's best at: the first one handles research, and the second one analyzes and condenses that information into what's most important."
+          }
+        ]
+      },
+      "customApiAgent": {
+        "title": "Custom System Integration",
+        "exchanges": [
+          {
+            "user": "Can I make an agent that checks order status from our internal system?",
+            "agent": "Absolutely! Create a 'Custom Function Tool' in the builder. Define parameters (like 'order_number') and configure the connection to your internal order system through its API."
+          },
+          {
+            "user": "Is that secure? How do I handle my API key?",
+            "agent": "It's completely secure. Configure the tool to use environment variables (like 'API_KEY') for authentication headers. This way, your key is never visible in the configuration settings."
+          },
+          {
+            "user": "So the agent can just pull data through our API?",
+            "agent": "Yes, that's right. When a customer asks about their order status and provides the number, your agent will use the Custom Tool you built, securely connect to your system, and return the current status to the customer."
+          }
+        ]
+      }
+    }
+  },
+  "visualBuilder": {
+    "header": {
+      "eyebrow": "Agent Constructor",
+      "title": "Build powerful multi-agent systems"
+    },
+    "windowTitle": "VibeCraft Agent Constructor",
+    "placeholder": {
+      "title": "Agent Construction Interface",
+      "description": "Configure multi-agent systems, API integrations, and custom tools without coding"
+    }
+  },
+  "features": {
+    "header": {
+      "eyebrow": "Features",
+      "title": "Powerful Agent Construction System",
+      "description": "Build sophisticated multi-agent systems with powerful tools and API integrations"
+    },
+    "list": {
+      "multiAgent": {
+        "title": "Multi-Agent Architecture",
+        "description": "Build sophisticated systems with multiple specialized agents that can collaborate and hand off tasks to each other."
+      },
+      "apiBuilder": {
+        "title": "API Integration Builder",
+        "description": "Create custom API tools with dynamic parameters, templates, and configurations without writing any code."
+      },
+      "contextualMemory": {
+        "title": "Contextual Memory",
+        "description": "Define custom context classes to maintain state and user information across conversations with configurable attributes."
+      },
+      "tools": {
+        "title": "Built-in & Custom Tools",
+        "description": "Extend your agents with both pre-built tools and custom functions, from web search to specialized API integrations."
+      },
+      "routing": {
+        "title": "Intelligent Routing",
+        "description": "Set up router agents to direct conversations and hand off tasks between specialized agents for complex workflows."
+      },
+      "testing": {
+        "title": "Advanced Testing & Preview",
+        "description": "Test your agent configurations directly in the builder and preview responses before deploying to production."
+      }
+    }
+  },
+  "howItWorks": {
+    "header": {
+      "eyebrow": "How It Works",
+      "title": "Build your multi-agent system in three steps",
+      "description": "Create sophisticated AI systems with powerful API integrations"
+    },
+    "steps": {
+      "configure": {
+        "title": "Configure Your Agent System",
+        "description": "Define your system settings, context class, and create specialized agents with specific instructions."
+      },
+      "addTools": {
+        "title": "Add Tools & API Integrations",
+        "description": "Extend your agents with built-in tools, create custom API calls, and set up agent-to-agent handoffs."
+      },
+      "testDeploy": {
+        "title": "Test & Deploy",
+        "description": "Test your agent system with the built-in testing interface, then deploy with simple API endpoints."
+      }
+    }
+  },
+  "cta": {
+    "title": {
+      "part1": "Ready to build AI agents",
+      "accent": "without code"
+    },
+    "subtitle": "Get started today and transform how you engage with your audience.",
+    "button": "Start Building Now"
+  },
+  "footer": {
+    "copyright": "© 2024 VibeCraft. All rights reserved."
+  }
+} 

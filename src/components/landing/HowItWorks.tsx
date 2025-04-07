@@ -1,42 +1,35 @@
+'use client';
+
 import SectionHeader from '../ui/SectionHeader';
 import StepCard from '../ui/StepCard';
+import { useSafeTranslation } from '../I18nProvider';
 
 export default function HowItWorks() {
+  const { t } = useSafeTranslation();
+
   const steps = [
-    {
-      number: 1,
-      title: "Configure Your Agent System",
-      description: "Define your system settings, context class, and create specialized agents with specific instructions."
-    },
-    {
-      number: 2,
-      title: "Add Tools & API Integrations",
-      description: "Extend your agents with built-in tools, create custom API calls, and set up agent-to-agent handoffs."
-    },
-    {
-      number: 3,
-      title: "Test & Deploy",
-      description: "Test your agent system with the built-in testing interface, then deploy with simple API endpoints."
-    }
+    { key: 'configure', number: 1 },
+    { key: 'addTools', number: 2 },
+    { key: 'testDeploy', number: 3 },
   ];
 
   return (
     <section id="how-it-works" className="py-20 bg-dark">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader 
-          eyebrow="How It Works"
-          title="Build your multi-agent system in three steps"
-          description="Create sophisticated AI systems with powerful API integrations"
+          eyebrow={t('howItWorks.header.eyebrow')}
+          title={t('howItWorks.header.title')}
+          description={t('howItWorks.header.description')}
         />
 
         <div className="mt-16">
           <div className="grid gap-10 md:grid-cols-3">
-            {steps.map((step, index) => (
+            {steps.map((step) => (
               <StepCard
-                key={index}
+                key={step.key}
                 number={step.number}
-                title={step.title}
-                description={step.description}
+                title={t(`howItWorks.steps.${step.key}.title`)}
+                description={t(`howItWorks.steps.${step.key}.description`)}
               />
             ))}
           </div>

@@ -1,9 +1,15 @@
+'use client';
+
 import SectionHeader from '../ui/SectionHeader';
 import FeatureCard from '../ui/FeatureCard';
+import { useSafeTranslation } from '../I18nProvider';
 
 export default function Features() {
+  const { t } = useSafeTranslation();
+
   const features = [
     {
+      key: "multiAgent",
       title: "Multi-Agent Architecture",
       description: "Build sophisticated systems with multiple specialized agents that can collaborate and hand off tasks to each other.",
       icon: (
@@ -13,6 +19,7 @@ export default function Features() {
       ),
     },
     {
+      key: "apiBuilder",
       title: "API Integration Builder",
       description: "Create custom API tools with dynamic parameters, templates, and configurations without writing any code.",
       icon: (
@@ -22,6 +29,7 @@ export default function Features() {
       ),
     },
     {
+      key: "contextualMemory",
       title: "Contextual Memory",
       description: "Define custom context classes to maintain state and user information across conversations with configurable attributes.",
       icon: (
@@ -31,6 +39,7 @@ export default function Features() {
       ),
     },
     {
+      key: "tools",
       title: "Built-in & Custom Tools",
       description: "Extend your agents with both pre-built tools and custom functions, from web search to specialized API integrations.",
       icon: (
@@ -40,6 +49,7 @@ export default function Features() {
       ),
     },
     {
+      key: "routing",
       title: "Intelligent Routing",
       description: "Set up router agents to direct conversations and hand off tasks between specialized agents for complex workflows.",
       icon: (
@@ -49,6 +59,7 @@ export default function Features() {
       ),
     },
     {
+      key: "testing",
       title: "Advanced Testing & Preview",
       description: "Test your agent configurations directly in the builder and preview responses before deploying to production.",
       icon: (
@@ -63,19 +74,19 @@ export default function Features() {
     <section id="features" className="py-20 bg-dark">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader 
-          eyebrow="Features"
-          title="Powerful Agent Construction System"
-          description="Build sophisticated multi-agent systems with powerful tools and API integrations"
+          eyebrow={t('features.header.eyebrow')}
+          title={t('features.header.title')}
+          description={t('features.header.description')}
         />
 
         <div className="mt-16">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <FeatureCard
-                key={index}
+                key={feature.key}
                 icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
+                title={t(`features.list.${feature.key}.title`)}
+                description={t(`features.list.${feature.key}.description`)}
               />
             ))}
           </div>

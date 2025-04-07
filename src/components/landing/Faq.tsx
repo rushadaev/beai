@@ -1,56 +1,61 @@
+'use client';
+
 import SectionHeader from '../ui/SectionHeader';
 import TabChat from '../ui/TabChat';
+import { useSafeTranslation } from '@/components/I18nProvider';
 
 export default function Faq() {
+  const { t } = useSafeTranslation();
+
   const demoExamples = [
     {
-      title: "Customer Support",
+      title: t('faq.demos.knowledgeAgent.title'),
       exchanges: [
         {
-          user: "I need to create an agent that can answer questions about my product.",
-          agent: "I can help with that! You can use the visual node constructor to design a workflow. Start by connecting a 'Knowledge Base' node and uploading your product documentation."
+          user: t('faq.demos.knowledgeAgent.exchanges.0.user'),
+          agent: t('faq.demos.knowledgeAgent.exchanges.0.agent')
         },
         {
-          user: "How will it understand product-specific questions?",
-          agent: "You can train it by connecting a 'Custom Training' node to your knowledge base. This will enable it to understand context and provide accurate answers about your specific products."
+          user: t('faq.demos.knowledgeAgent.exchanges.1.user'),
+          agent: t('faq.demos.knowledgeAgent.exchanges.1.agent')
         },
         {
-          user: "Can I customize the responses?",
-          agent: "Absolutely! You can add a 'Response Template' node to define specific formats for different types of questions. This helps maintain your brand voice and ensures consistency."
+          user: t('faq.demos.knowledgeAgent.exchanges.2.user'),
+          agent: t('faq.demos.knowledgeAgent.exchanges.2.agent')
         }
       ]
     },
     {
-      title: "Lead Generation",
+      title: t('faq.demos.researchAgent.title'),
       exchanges: [
         {
-          user: "Can I create a bot that collects visitor information?",
-          agent: "Absolutely! Start with a 'Conversation' node, then add a 'Form Collection' node to gather visitor details. You can customize what information to collect."
+          user: t('faq.demos.researchAgent.exchanges.0.user'),
+          agent: t('faq.demos.researchAgent.exchanges.0.agent')
         },
         {
-          user: "Where does the collected data go?",
-          agent: "You can route it anywhere by connecting an 'Integration' node. Send leads directly to your CRM, email, or even Google Sheets - all without coding."
+          user: t('faq.demos.researchAgent.exchanges.1.user'),
+          agent: t('faq.demos.researchAgent.exchanges.1.agent')
         },
         {
-          user: "How can I qualify leads automatically?",
-          agent: "Connect a 'Conditional Logic' node after your form collection. This lets you route different leads based on their responses – high-value prospects can be sent to sales while others receive automated follow-ups."
+          user: t('faq.demos.researchAgent.exchanges.2.user'),
+          agent: t('faq.demos.researchAgent.exchanges.2.agent')
         }
       ]
     },
     {
-      title: "No-Code Workflow",
+      title: t('faq.demos.customApiAgent.title'),
       exchanges: [
         {
-          user: "I don't know how to code. Can I still build a useful agent?",
-          agent: "Definitely! VibeCraft is designed specifically for non-technical users. The drag-and-drop interface lets you build sophisticated agents without writing a single line of code."
+          user: t('faq.demos.customApiAgent.exchanges.0.user'),
+          agent: t('faq.demos.customApiAgent.exchanges.0.agent')
         },
         {
-          user: "How do I test if my agent is working correctly?",
-          agent: "The platform includes a built-in testing environment. You can chat with your agent instantly and make adjustments until it behaves exactly as you want."
+          user: t('faq.demos.customApiAgent.exchanges.1.user'),
+          agent: t('faq.demos.customApiAgent.exchanges.1.agent')
         },
         {
-          user: "What if I need help building my agent?",
-          agent: "We provide templates for common use cases that you can customize. Plus, our support team is available to help you create the perfect agent for your specific needs."
+          user: t('faq.demos.customApiAgent.exchanges.2.user'),
+          agent: t('faq.demos.customApiAgent.exchanges.2.agent')
         }
       ]
     }
@@ -60,9 +65,9 @@ export default function Faq() {
     <section id="faq" className="py-20 bg-dark">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <SectionHeader 
-          eyebrow="Interactive Demo"
-          title="See How Agents Work"
-          description="Explore real conversation examples of what your AI agents can do"
+          eyebrow={t('faq.header.eyebrow')}
+          title={t('faq.header.title')}
+          description={t('faq.header.description')}
         />
 
         <div className="mt-12">
