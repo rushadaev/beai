@@ -37,26 +37,48 @@
   // Fetch widget configuration including API URL
   async function fetchWidgetConfig(chatbotId) {
     try {
-      // First get widget config from our app which includes the API URL
-      const scriptUrl = new URL(document.currentScript.src);
-      const baseUrl = `${scriptUrl.protocol}//${scriptUrl.host}`;
-      const response = await fetch(`${baseUrl}/api/widget-config?chatbotId=${chatbotId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch widget configuration');
+      // Try to get the script URL, but this might fail when loaded from filesystem
+      let baseUrl = '';
+      try {
+        const scriptElement = document.currentScript || 
+          document.querySelector('script[src*="widget.js"]');
+        
+        if (scriptElement && scriptElement.src) {
+          const scriptUrl = new URL(scriptElement.src);
+          baseUrl = `${scriptUrl.protocol}//${scriptUrl.host}`;
+        }
+      } catch (e) {
+        console.warn('Could not determine script URL:', e);
       }
       
-      const widgetConfig = await response.json();
+      if (baseUrl) {
+        try {
+          // Try to fetch config with appropriate CORS settings
+          const response = await fetch(`${baseUrl}/api/widget-config?chatbotId=${chatbotId}`, {
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const widgetConfig = await response.json();
+            window.BEAI_API_URL = widgetConfig.apiUrl;
+            fetchChatbotConfig(chatbotId);
+            return;
+          }
+        } catch (fetchError) {
+          console.warn('Error fetching widget config, using default:', fetchError);
+        }
+      }
       
-      // Set the API URL globally
-      window.BEAI_API_URL = widgetConfig.apiUrl;
-      
-      // Now fetch the chatbot config from the API
+      // If we get here, either we couldn't determine the base URL or the fetch failed
+      // Just use a hardcoded default API URL
+      window.BEAI_API_URL = window.BEAI_API_URL || 'http://localhost:8234';
+      console.log('Using API URL:', window.BEAI_API_URL);
       fetchChatbotConfig(chatbotId);
     } catch (error) {
-      console.error('Error fetching widget configuration:', error);
-      // Fallback to default URL
-      window.BEAI_API_URL = 'http://localhost:8000';
+      console.error('Error in widget config setup:', error);
+      window.BEAI_API_URL = 'http://localhost:8234';
       fetchChatbotConfig(chatbotId);
     }
   }
@@ -65,7 +87,17 @@
   async function fetchChatbotConfig(chatbotId) {
     try {
       const apiUrl = window.BEAI_API_URL;
-      const response = await fetch(`${apiUrl}/api/agents/${chatbotId}`);
+      
+      console.log(`Fetching chatbot config from: ${apiUrl}/api/agents/${chatbotId}`);
+      
+      // Add CORS handling
+      const response = await fetch(`${apiUrl}/api/agents/${chatbotId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch chatbot configuration');
