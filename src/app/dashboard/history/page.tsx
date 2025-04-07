@@ -40,11 +40,10 @@ export default function HistoryPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'completed' | 'abandoned'>('all');
   const [loading, setLoading] = useState(true);
-  const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [conversations, setConversations] = useState<ConversationGroup[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<ConversationGroup | null>(null);
   
-  // Fetch user's chatbots
+  // Fetch user's chatbots and history
   useEffect(() => {
     async function fetchChatbots() {
       if (!user?.uid) return;
@@ -60,8 +59,6 @@ export default function HistoryPage() {
           id: doc.id,
           ...doc.data()
         } as Chatbot));
-        
-        setChatbots(chatbotsList);
         
         // After fetching chatbots, fetch chat history
         if (chatbotsList.length > 0) {

@@ -203,7 +203,6 @@ export default function Dashboard() {
     // In a real app, you would check various conditions to determine progress
     
     const hasCreatedChatbot = chatbots.length > 0;
-    const chatbotSetupComplete = hasCreatedChatbot; // For demonstration purposes
     
     // Update setup progress
     setSetupProgress({

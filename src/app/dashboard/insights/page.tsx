@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useSafeTranslation } from '@/components/I18nProvider';
 import { useAuth } from '@/lib/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 
 interface ChatMessage {
   id: string;
@@ -53,6 +53,121 @@ export default function InsightsPage() {
   
   // Fetch data on component mount and when time range changes
   useEffect(() => {
+    
+    // Define fetchChatHistory inside useEffect to capture dependencies correctly
+    async function fetchChatHistory(agentIds: string[]) {
+      try {
+        // Get the date range based on selected time range
+        const { startDate, endDate } = getDateRange(timeRange);
+        
+        // Fetch messages within the selected time range
+        const chatHistoryQuery = query(
+          collection(db, 'chat_history'),
+          where('agent_id', 'in', agentIds),
+          where('timestamp', '>=', startDate),
+          where('timestamp', '<=', endDate),
+          orderBy('timestamp', 'asc')
+        );
+        
+        const chatHistorySnapshot = await getDocs(chatHistoryQuery);
+        const chatMessages = chatHistorySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as ChatMessage));
+        
+        // Process the data to generate insights
+        processInsightsData(chatMessages, timeRange);
+        
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    }
+    
+    // Define processInsightsData inside useEffect
+    function processInsightsData(messages: ChatMessage[], range: 'day' | 'week' | 'month' | 'year') {
+      if (messages.length === 0) {
+        // No data to process
+        setStats({
+          totalConversations: '0',
+          avgLength: '0 min',
+          satisfaction: '0%',
+          responseRate: '0%'
+        });
+        setChanges({
+          totalConversations: '+0%',
+          avgLength: '+0%',
+          satisfaction: '+0%',
+          responseRate: '+0%'
+        });
+        setConversationData([0, 0, 0, 0, 0, 0, 0]);
+        setTopQuestions([]);
+        return;
+      }
+      
+      // Group messages by conversation (user_id + agent_id)
+      const conversationMap = new Map<string, ChatMessage[]>();
+      
+      messages.forEach(message => {
+        const key = `${message.user_id}_${message.agent_id}`;
+        if (!conversationMap.has(key)) {
+          conversationMap.set(key, []);
+        }
+        conversationMap.get(key)?.push(message);
+      });
+      
+      // Calculate conversation metrics
+      const totalConversations = conversationMap.size;
+      
+      // Calculate average conversation length (in minutes)
+      let totalDuration = 0;
+      conversationMap.forEach(convoMessages => {
+        if (convoMessages.length < 2) return;
+        
+        const firstMsg = convoMessages[0];
+        const lastMsg = convoMessages[convoMessages.length - 1];
+        const durationMs = lastMsg.timestamp.toMillis() - firstMsg.timestamp.toMillis();
+        totalDuration += durationMs;
+      });
+      
+      const avgLengthMs = totalConversations > 0 ? totalDuration / totalConversations : 0;
+      const avgLengthMin = Math.round(avgLengthMs / 60000 * 10) / 10; // Round to 1 decimal place
+      
+      // Calculate response rate (percentage of user messages that received a response)
+      const responseRate = messages.filter(msg => msg.response && msg.response.trim() !== '').length / messages.length * 100;
+      
+      // For satisfaction, use a placeholder calculation (would be based on actual feedback in a real app)
+      // In this example, let's assume a random satisfaction rate between 80% and 100%
+      const placeholderSatisfaction = totalConversations > 0 ? 80 + Math.floor(Math.random() * 20) : 0;
+      
+      // Generate random changes for demonstration purposes
+      // In a real app, these would be calculated by comparing with the previous period
+      const randomChanges = {
+        totalConversations: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 15) + '%',
+        avgLength: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 10) + '%',
+        satisfaction: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 5) + '%',
+        responseRate: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 3) + '%'
+      };
+      
+      // Update stats
+      setStats({
+        totalConversations: totalConversations.toString(),
+        avgLength: `${avgLengthMin} min`,
+        satisfaction: `${placeholderSatisfaction}%`,
+        responseRate: `${Math.round(responseRate)}%`
+      });
+      
+      // Update changes
+      setChanges(randomChanges);
+      
+      // Generate conversation volume data for chart
+      const volumeData = generateConversationVolumeData(messages, range);
+      setConversationData(volumeData);
+      
+      // Generate top questions data
+      const questions = generateTopQuestions(messages);
+      setTopQuestions(questions);
+    }
+    
     async function fetchInsightsData() {
       if (!user?.uid) return;
       
@@ -89,35 +204,7 @@ export default function InsightsPage() {
     }
     
     fetchInsightsData();
-  }, [user, timeRange]);
-  
-  async function fetchChatHistory(agentIds: string[]) {
-    try {
-      // Get the date range based on selected time range
-      const { startDate, endDate } = getDateRange(timeRange);
-      
-      // Fetch messages within the selected time range
-      const chatHistoryQuery = query(
-        collection(db, 'chat_history'),
-        where('agent_id', 'in', agentIds),
-        where('timestamp', '>=', startDate),
-        where('timestamp', '<=', endDate),
-        orderBy('timestamp', 'asc')
-      );
-      
-      const chatHistorySnapshot = await getDocs(chatHistoryQuery);
-      const chatMessages = chatHistorySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as ChatMessage));
-      
-      // Process the data to generate insights
-      processInsightsData(chatMessages, timeRange);
-      
-    } catch (error) {
-      console.error('Error fetching chat history:', error);
-    }
-  }
+  }, [user, timeRange]); // Dependencies: user and timeRange
   
   function getDateRange(range: 'day' | 'week' | 'month' | 'year') {
     const now = new Date();
@@ -146,91 +233,6 @@ export default function InsightsPage() {
       startDate: Timestamp.fromDate(startDate),
       endDate: Timestamp.fromDate(now)
     };
-  }
-  
-  function processInsightsData(messages: ChatMessage[], range: 'day' | 'week' | 'month' | 'year') {
-    if (messages.length === 0) {
-      // No data to process
-      setStats({
-        totalConversations: '0',
-        avgLength: '0 min',
-        satisfaction: '0%',
-        responseRate: '0%'
-      });
-      setChanges({
-        totalConversations: '+0%',
-        avgLength: '+0%',
-        satisfaction: '+0%',
-        responseRate: '+0%'
-      });
-      setConversationData([0, 0, 0, 0, 0, 0, 0]);
-      setTopQuestions([]);
-      return;
-    }
-    
-    // Group messages by conversation (user_id + agent_id)
-    const conversationMap = new Map<string, ChatMessage[]>();
-    
-    messages.forEach(message => {
-      const key = `${message.user_id}_${message.agent_id}`;
-      if (!conversationMap.has(key)) {
-        conversationMap.set(key, []);
-      }
-      conversationMap.get(key)?.push(message);
-    });
-    
-    // Calculate conversation metrics
-    const totalConversations = conversationMap.size;
-    
-    // Calculate average conversation length (in minutes)
-    let totalDuration = 0;
-    conversationMap.forEach(convoMessages => {
-      if (convoMessages.length < 2) return;
-      
-      const firstMsg = convoMessages[0];
-      const lastMsg = convoMessages[convoMessages.length - 1];
-      const durationMs = lastMsg.timestamp.toMillis() - firstMsg.timestamp.toMillis();
-      totalDuration += durationMs;
-    });
-    
-    const avgLengthMs = totalConversations > 0 ? totalDuration / totalConversations : 0;
-    const avgLengthMin = Math.round(avgLengthMs / 60000 * 10) / 10; // Round to 1 decimal place
-    
-    // Calculate response rate (percentage of user messages that received a response)
-    const responseRate = messages.filter(msg => msg.response && msg.response.trim() !== '').length / messages.length * 100;
-    
-    // For satisfaction, use a placeholder calculation (would be based on actual feedback in a real app)
-    // In this example, let's assume a random satisfaction rate between 80% and 100%
-    const placeholderSatisfaction = totalConversations > 0 ? 80 + Math.floor(Math.random() * 20) : 0;
-    
-    // Generate random changes for demonstration purposes
-    // In a real app, these would be calculated by comparing with the previous period
-    const randomChange = () => (Math.floor(Math.random() * 20) - 10) + '%';
-    const randomChanges = {
-      totalConversations: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 15) + '%',
-      avgLength: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 10) + '%',
-      satisfaction: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 5) + '%',
-      responseRate: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 3) + '%'
-    };
-    
-    // Update stats
-    setStats({
-      totalConversations: totalConversations.toString(),
-      avgLength: `${avgLengthMin} min`,
-      satisfaction: `${placeholderSatisfaction}%`,
-      responseRate: `${Math.round(responseRate)}%`
-    });
-    
-    // Update changes
-    setChanges(randomChanges);
-    
-    // Generate conversation volume data for chart
-    const volumeData = generateConversationVolumeData(messages, range);
-    setConversationData(volumeData);
-    
-    // Generate top questions data
-    const questions = generateTopQuestions(messages);
-    setTopQuestions(questions);
   }
   
   function generateConversationVolumeData(messages: ChatMessage[], range: 'day' | 'week' | 'month' | 'year'): number[] {
