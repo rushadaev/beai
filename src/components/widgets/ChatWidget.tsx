@@ -106,6 +106,7 @@ export default function ChatWidget({
           },
           body: JSON.stringify({
             agent_id: chatbotId,
+            user_id: `preview_${chatbotId}`,
             message: userMessage.text,
             stream: false
           }),

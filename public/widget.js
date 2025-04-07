@@ -29,11 +29,13 @@
     if (command === 'init') {
       const chatbotId = args[1];
       const appearanceConfig = args[2] || {}; // Get appearance from 3rd arg
-      
+      const userId = args[3] || null; // Get user_id from 4th arg
       // Store the configuration
       configs.chatbotId = chatbotId;
       // Merge provided appearance with defaults
       configs.appearance = { ...configs.appearance, ...appearanceConfig }; 
+
+      configs.userId = userId;
       
       // Fetch initial widget config (like API URL) and then suggestion questions
       fetchWidgetAndSuggestionConfig(chatbotId);
@@ -533,6 +535,7 @@
           },
           body: JSON.stringify({
             agent_id: this.configs.chatbotId,
+            user_id: this.configs.userId,
             message: text,
             stream: false // Assuming no streaming for widget for now
           }),

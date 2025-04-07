@@ -37,7 +37,7 @@ export default function InstallModal({ chatbotId, appearance }: InstallModalProp
     w[o].l=1*new Date();js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
     js.async=1;js.src=f;fjs.parentNode.insertBefore(js,fjs);
   })(window,document,'script','beai','${baseUrl}/widget.js');
-  beai('init', '${chatbotId}', ${appearanceJson}); // Pass appearance as 3rd arg
+  beai('init', '${chatbotId}', ${appearanceJson}, 'widget_demo_${chatbotId}'); // Pass appearance as 3rd arg
 </script>`;
 
   useEffect(() => {

@@ -318,7 +318,7 @@ export default function Agent({
       const response = await fetch(`${apiBaseUrl}/api/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent_id: chatbotId, message, stream: false }),
+        body: JSON.stringify({ agent_id: chatbotId, message, stream: false, user_id: `test_${chatbotId}` }),
       });
       if (!response.ok) throw new Error('Failed to get response from agent');
       const data = await response.json();
