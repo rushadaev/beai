@@ -46,7 +46,7 @@ export default function Dashboard() {
             <h3 className="mb-4 text-lg font-medium text-primary">Quick Actions</h3>
             <div className="space-y-3">
               <Link 
-                href="/dashboard/chatbot"
+                href="/dashboard/chatbots"
                 className="flex items-center rounded-md border border-border bg-dark p-3 text-primary hover:bg-card/80"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5 text-accent" viewBox="0 0 20 20" fill="currentColor">
@@ -65,7 +65,7 @@ export default function Dashboard() {
                 View Insights
               </Link>
               <Link 
-                href="/dashboard/sources"
+                href="/dashboard/chatbots"
                 className="flex items-center rounded-md border border-border bg-dark p-3 text-primary hover:bg-card/80"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5 text-accent" viewBox="0 0 20 20" fill="currentColor">
@@ -112,7 +112,7 @@ export default function Dashboard() {
             </div>
             
             <Link
-              href="/dashboard/chatbot"
+              href="/dashboard/chatbots"
               className="inline-block rounded-md bg-accent px-4 py-2 text-sm font-medium text-dark hover:bg-accent/80"
             >
               Continue Setup
