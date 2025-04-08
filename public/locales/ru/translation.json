@@ -263,6 +263,29 @@
           "contextClassTitle": "Класс Контекста",
           "contextClassNameLabel": "Имя Класса Контекста",
           "contextAttributesTitle": "Атрибуты Контекста",
+          "contextAttributesLabel": "Атрибуты Контекста",
+          "workflowTypeLabel": "Тип рабочего процесса",
+          "workflowTypeDescription": "Определяет, как обрабатываются взаимодействия агентов",
+          "workflowTypes": {
+            "simple_router": "Простой маршрутизатор",
+            "judge_loop": "Цикл генератор-оценщик"
+          },
+          "judgeLoop": {
+            "title": "Конфигурация цикла оценки",
+            "outputTypeWillBeAdded": "К этому агенту будет применен стандартный тип вывода оценки",
+            "generatorAgentLabel": "Агент-генератор",
+            "generatorAgentDescription": "Агент, создающий контент на основе запроса пользователя",
+            "evaluatorAgentLabel": "Агент-оценщик",
+            "evaluatorAgentDescription": "Агент, оценивающий вывод генератора",
+            "maxIterationsLabel": "Максимальное количество итераций",
+            "maxIterationsDescription": "Максимальное количество циклов улучшения перед возвратом результата",
+            "passFieldLabel": "Поле прохождения оценки",
+            "passFieldDescription": "Имя поля в выводе оценщика, указывающее статус прохождения/неудачи",
+            "passValueLabel": "Значение прохождения",
+            "passValueDescription": "Значение, указывающее на положительную оценку",
+            "feedbackFieldLabel": "Поле обратной связи",
+            "feedbackFieldDescription": "Имя поля в выводе оценщика, содержащее обратную связь для улучшения"
+          },
           "addAttributeButton": "+ Добавить Атрибут",
           "noAttributes": "Атрибуты не определены",
           "attributeNamePlaceholder": "Имя",
@@ -281,7 +304,31 @@
           "handoffDescriptionLabel": "Описание передачи (опционально)",
           "handoffDescriptionPlaceholder": "Описание, когда передавать задачу этому агенту",
           "availableHandoffsLabel": "Доступные передачи",
-          "noHandoffsAvailable": "Нет других агентов для передачи"
+          "noHandoffsAvailable": "Нет других агентов для передачи",
+          "outputType": {
+            "title": "Тип вывода оценщика",
+            "description": "Определите структурированный формат вывода, который агент-оценщик будет использовать для предоставления обратной связи",
+            "typeName": "Название типа",
+            "typeNamePlaceholder": "например, EvaluationFeedback",
+            "typeNameHelp": "Описательное название для этого типа вывода",
+            "properties": "Свойства",
+            "addProperty": "+ Добавить свойство",
+            "noProperties": "Свойства еще не определены",
+            "propertyForm": {
+              "name": "Название свойства",
+              "namePlaceholder": "например, feedback",
+              "type": "Тип",
+              "description": "Описание",
+              "descriptionPlaceholder": "например, Обратная связь о том, как улучшить",
+              "enumValues": "Значения перечисления (через запятую)",
+              "enumValuesPlaceholder": "например, pass, needs_improvement, fail",
+              "enumValuesHelp": "Оставьте пустым, если разрешена любая строка",
+              "required": "Это свойство обязательно",
+              "cancel": "Отмена",
+              "add": "Добавить"
+            },
+            "useTemplate": "Использовать шаблон оценщика"
+          }
         },
         "toolsSection": {
           "title": "Инструменты Агента",
@@ -321,7 +368,9 @@
           "unsavedWarning": "У вас есть несохраненные изменения. Сохраните конфигурацию для тестирования последних изменений.",
           "testMessageLabel": "Тестовое сообщение",
           "testMessagePlaceholder": "Введите сообщение для тестирования агента...",
+          "inputPlaceholder": "Введите сообщение для тестирования агента...",
           "testButton": "Тест",
+          "sendButton": "Отправить",
           "testingButton": "Тестирование...",
           "saveFirstTooltip": "Сначала сохраните конфигурацию",
           "responseLabel": "Ответ",

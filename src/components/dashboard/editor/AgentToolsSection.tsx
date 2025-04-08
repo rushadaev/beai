@@ -6,7 +6,7 @@ import { useSafeTranslation } from '@/components/I18nProvider';
 
 // Helper function for deep cloning (to avoid modifying state directly)
 // You might want to use a library like lodash.cloneDeep in a real app
-const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+const deepClone = (obj: unknown) => JSON.parse(JSON.stringify(obj));
 
 interface AgentToolsSectionProps {
   agent: AgentDefinition;

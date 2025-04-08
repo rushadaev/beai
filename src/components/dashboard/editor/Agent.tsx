@@ -10,6 +10,7 @@ import ActiveAgentEditor from './ActiveAgentEditor';
 import AgentTestingSection from './AgentTestingSection';
 import AgentApiEndpoints from './AgentApiEndpoints';
 import ToolSelectionModal from './ToolSelectionModal';
+import { JudgeLoopSettings } from './JudgeLoopConfig';
 
 // Export interfaces for use in sub-components
 export interface AgentAttribute {
@@ -56,6 +57,18 @@ export interface AgentDefinition {
   handoff_description?: string;
   tools: (string | AgentTool | BuiltInTool)[];
   handoffs: string[];
+  output_type?: {
+    name: string;
+    schema: {
+      type: string;
+      properties: Record<string, {
+        type: string;
+        description: string;
+        enum?: string[];
+      }>;
+      required: string[];
+    };
+  };
 }
 
 export interface AgentConfig {
@@ -67,6 +80,15 @@ export interface AgentConfig {
   agents: AgentDefinition[];
   router_agent_id: string;
   default_model: string;
+  workflow_type?: 'simple_router' | 'judge_loop';
+  judge_loop_settings?: {
+    generator_agent_id: string;
+    evaluator_agent_id: string;
+    max_iterations: number;
+    pass_field: string;
+    pass_value: string;
+    feedback_field: string;
+  };
 }
 
 interface AgentProps {
@@ -97,7 +119,8 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
     }
   ],
   router_agent_id: "main_assistant",
-  default_model: "gpt-4o-mini"
+  default_model: "gpt-4o-mini",
+  workflow_type: "simple_router"
 };
 
 
@@ -216,6 +239,36 @@ export default function Agent({
     });
   };
 
+  const updateWorkflowType = (type: 'simple_router' | 'judge_loop') => {
+    // If switching to judge loop and no judge loop settings exist, initialize with defaults
+    if (type === 'judge_loop' && !config.judge_loop_settings) {
+      handleConfigChange({
+        ...config,
+        workflow_type: type,
+        judge_loop_settings: {
+          generator_agent_id: config.agents[0]?.id || '',
+          evaluator_agent_id: config.agents.length > 1 ? config.agents[1].id : config.agents[0]?.id || '',
+          max_iterations: 5,
+          pass_field: 'score',
+          pass_value: 'pass',
+          feedback_field: 'feedback'
+        }
+      });
+    } else {
+      handleConfigChange({
+        ...config,
+        workflow_type: type
+      });
+    }
+  };
+
+  const updateJudgeLoopSettings = (settings: JudgeLoopSettings) => {
+    handleConfigChange({
+      ...config,
+      judge_loop_settings: settings
+    });
+  };
+
   const updateRouterAgentId = (id: string) => {
     handleConfigChange({
       ...config,
@@ -318,23 +371,36 @@ export default function Agent({
     }
   };
 
-  const testAgentHandler = async (message: string) => {
-    if (!message.trim() || !chatbotId) return;
-    
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent_id: chatbotId, message, stream: false, user_id: `test_${chatbotId}` }),
-      });
-      if (!response.ok) throw new Error('Failed to get response from agent');
-      const data = await response.json();
-      setTestResponse(data.response);
-    } catch (error) {
-      console.error('Error testing agent:', error);
-      setTestResponse(t('dashboard.editor.agent.testingSection.testError'));
-      throw error;
+  const testAgentHandler = async (message: string): Promise<any> => {
+    if (!chatbotId) {
+      throw new Error("No chatbot ID available");
     }
+    
+    setHasUnsavedChanges(false); // Reset the unsaved changes flag for testing
+    
+    const endpoint = `${apiBaseUrl}/api/agents/${chatbotId}/message`;
+    const payload = {
+      message,
+      context: {} // You can add context data here if needed
+    };
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Error testing agent");
+    }
+    
+    const responseData = await response.json();
+    
+    // Return the full response object to allow accessing judge loop iterations
+    return responseData;
   };
 
   const addTool = (agentId: string, toolType: 'built-in' | 'api-call' | 'agent') => {
@@ -451,6 +517,8 @@ export default function Agent({
           addContextAttribute={addContextAttribute}
           updateContextAttribute={updateContextAttribute}
           removeContextAttribute={removeContextAttribute}
+          updateWorkflowType={updateWorkflowType}
+          updateJudgeLoopSettings={updateJudgeLoopSettings}
         />
         
         {/* Agents Section */}

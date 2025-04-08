@@ -2,9 +2,11 @@
 
 import { AgentConfig, AgentAttribute } from './Agent'; // Assuming types are exported from Agent.tsx initially
 import { useSafeTranslation } from '@/components/I18nProvider';
+import JudgeLoopConfig, { JudgeLoopSettings } from './JudgeLoopConfig';
 
 const VALID_TYPES = ["str", "int", "float", "bool", "list", "dict", "List[str]", "Dict[str, Any]"];
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
+const WORKFLOW_TYPES = ["simple_router", "judge_loop"];
 
 interface AgentSystemSettingsProps {
   config: AgentConfig;
@@ -14,6 +16,8 @@ interface AgentSystemSettingsProps {
   addContextAttribute: () => void;
   updateContextAttribute: (index: number, attr: AgentAttribute) => void;
   removeContextAttribute: (index: number) => void;
+  updateWorkflowType: (type: 'simple_router' | 'judge_loop') => void;
+  updateJudgeLoopSettings: (settings: JudgeLoopSettings) => void;
 }
 
 export default function AgentSystemSettings({ 
@@ -23,7 +27,9 @@ export default function AgentSystemSettings({
   updateContextClassName,
   addContextAttribute,
   updateContextAttribute,
-  removeContextAttribute
+  removeContextAttribute,
+  updateWorkflowType,
+  updateJudgeLoopSettings
 }: AgentSystemSettingsProps) {
   const { t } = useSafeTranslation();
 
@@ -59,6 +65,36 @@ export default function AgentSystemSettings({
           </select>
         </div>
       </div>
+      
+      {/* Workflow Type Selection */}
+      <div>
+        <label className="block text-sm font-medium text-secondary mb-1">
+          {t('dashboard.editor.agent.systemSettings.workflowTypeLabel')}
+        </label>
+        <select
+          value={config.workflow_type || 'simple_router'}
+          onChange={(e) => updateWorkflowType(e.target.value as 'simple_router' | 'judge_loop')}
+          className="w-full rounded-md border border-border bg-dark px-3 py-2 text-sm text-primary focus:border-accent focus:outline-none"
+        >
+          {WORKFLOW_TYPES.map(type => (
+            <option key={type} value={type}>
+              {t(`dashboard.editor.agent.systemSettings.workflowTypes.${type}`)}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-secondary mt-1">
+          {t('dashboard.editor.agent.systemSettings.workflowTypeDescription')}
+        </p>
+      </div>
+      
+      {/* Render JudgeLoopConfig when the workflow type is judge_loop */}
+      {config.workflow_type === 'judge_loop' && config.judge_loop_settings && (
+        <JudgeLoopConfig 
+          settings={config.judge_loop_settings}
+          agents={config.agents}
+          onUpdate={updateJudgeLoopSettings}
+        />
+      )}
       
       {/* Context Class */}
       <div className="space-y-2">

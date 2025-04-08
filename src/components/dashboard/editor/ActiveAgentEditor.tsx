@@ -3,6 +3,7 @@
 import { AgentDefinition, AgentConfig } from './Agent';
 import { useSafeTranslation } from '@/components/I18nProvider';
 import AgentToolsSection from './AgentToolsSection';
+import OutputTypeConfig from './OutputTypeConfig';
 
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
 
@@ -30,7 +31,16 @@ export default function ActiveAgentEditor({
   removeTool
 }: ActiveAgentEditorProps) {
   const { t } = useSafeTranslation();
+  
+  // Check if this agent is an evaluator in a judge loop workflow
+  const isEvaluator = config.workflow_type === 'judge_loop' && 
+                      config.judge_loop_settings?.evaluator_agent_id === agent.id;
 
+  // Update the output_type for the agent
+  const handleOutputTypeUpdate = (outputType: any) => {
+    updateAgent(agent.id, { output_type: outputType });
+  };
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -99,6 +109,23 @@ export default function ActiveAgentEditor({
           ))}
         </select>
       </div>
+      
+      {/* Show Output Type Config for evaluator agents */}
+      {isEvaluator && (
+        <div>
+          <label className="block text-sm font-medium text-secondary mb-1">
+            {t('dashboard.editor.agent.agentsSection.outputType.title')}
+          </label>
+          <p className="text-xs text-secondary mb-2">
+            {t('dashboard.editor.agent.agentsSection.outputType.description')}
+          </p>
+          <OutputTypeConfig 
+            outputType={agent.output_type}
+            onUpdate={handleOutputTypeUpdate}
+            isEvaluator={true}
+          />
+        </div>
+      )}
       
       <div>
         <label className="block text-sm font-medium text-secondary mb-1">
