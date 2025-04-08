@@ -46,10 +46,6 @@ export default function JudgeLoopConfig({
       if (evaluatorAgent) {
         if (!evaluatorAgent.output_type) {
           // Notify the user that an output type will be applied
-          alert('An output type will be applied to the evaluator agent');
-          
-          // The OutputTypeConfig in ActiveAgentEditor will show for this agent
-          // and apply the default schema automatically when they view that agent
         }
         
         // Ensure pass_field and feedback_field match the evaluator output schema if it exists

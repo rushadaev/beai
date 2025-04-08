@@ -306,28 +306,33 @@
           "availableHandoffsLabel": "Available Handoffs",
           "noHandoffsAvailable": "No other agents available for handoff",
           "outputType": {
-            "title": "Evaluator Output Type",
-            "description": "Define the structured output format that this evaluator agent will use to provide feedback",
+            "title": "Structured Output Type",
+            "description": "Define a structured JSON output format for this agent, useful for function calling or structured data extraction.",
+            "defineButton": "Define Structured Output",
+            "removeButton": "Remove Output Type",
+            "removeTooltip": "Remove structured output configuration",
             "typeName": "Type Name",
-            "typeNamePlaceholder": "e.g., EvaluationFeedback",
-            "typeNameHelp": "A descriptive name for this output type",
+            "typeNamePlaceholder": "e.g., UserFeedback or TaskDetails",
+            "typeNameHelp": "A descriptive name for this output type (PascalCase recommended)",
             "properties": "Properties",
             "addProperty": "+ Add Property",
-            "noProperties": "No properties defined yet",
+            "noProperties": "No properties defined yet. Add properties to define the structure.",
             "propertyForm": {
               "name": "Property Name",
-              "namePlaceholder": "e.g., feedback",
+              "namePlaceholder": "e.g., feedback or task_name (snake_case recommended)",
               "type": "Type",
               "description": "Description",
-              "descriptionPlaceholder": "e.g., Feedback on how to improve",
+              "descriptionPlaceholder": "e.g., User's feedback on the interaction",
               "enumValues": "Enum Values (comma separated)",
               "enumValuesPlaceholder": "e.g., pass, needs_improvement, fail",
-              "enumValuesHelp": "Leave empty if any string is allowed",
-              "required": "This property is required",
+              "enumValuesHelp": "Restrict possible string values (leave empty if any string is allowed)",
+              "required": "This property is required in the output",
               "cancel": "Cancel",
-              "add": "Add"
+              "add": "Add Property",
+              "removePropertyTitle": "Remove Property"
             },
-            "useTemplate": "Use Evaluator Template"
+            "useTemplate": "Use Evaluator Template",
+            "useTemplateTooltip": "Apply default schema for Judge Loop evaluation"
           }
         },
         "toolsSection": {

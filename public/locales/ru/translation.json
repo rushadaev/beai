@@ -306,28 +306,33 @@
           "availableHandoffsLabel": "Доступные передачи",
           "noHandoffsAvailable": "Нет других агентов для передачи",
           "outputType": {
-            "title": "Тип вывода оценщика",
-            "description": "Определите структурированный формат вывода, который агент-оценщик будет использовать для предоставления обратной связи",
+            "title": "Тип структурированного вывода",
+            "description": "Определите структурированный формат вывода JSON для этого агента, полезный для вызова функций или извлечения структурированных данных.",
+            "defineButton": "Определить структурированный вывод",
+            "removeButton": "Удалить тип вывода",
+            "removeTooltip": "Удалить конфигурацию структурированного вывода",
             "typeName": "Название типа",
-            "typeNamePlaceholder": "например, EvaluationFeedback",
-            "typeNameHelp": "Описательное название для этого типа вывода",
+            "typeNamePlaceholder": "например, UserFeedback или TaskDetails",
+            "typeNameHelp": "Описательное название для этого типа вывода (рекомендуется PascalCase)",
             "properties": "Свойства",
             "addProperty": "+ Добавить свойство",
-            "noProperties": "Свойства еще не определены",
+            "noProperties": "Свойства еще не определены. Добавьте свойства для определения структуры.",
             "propertyForm": {
               "name": "Название свойства",
-              "namePlaceholder": "например, feedback",
+              "namePlaceholder": "например, feedback или task_name (рекомендуется snake_case)",
               "type": "Тип",
               "description": "Описание",
-              "descriptionPlaceholder": "например, Обратная связь о том, как улучшить",
+              "descriptionPlaceholder": "например, Отзыв пользователя о взаимодействии",
               "enumValues": "Значения перечисления (через запятую)",
               "enumValuesPlaceholder": "например, pass, needs_improvement, fail",
-              "enumValuesHelp": "Оставьте пустым, если разрешена любая строка",
-              "required": "Это свойство обязательно",
+              "enumValuesHelp": "Ограничьте возможные строковые значения (оставьте пустым, если разрешена любая строка)",
+              "required": "Это свойство обязательно для вывода",
               "cancel": "Отмена",
-              "add": "Добавить"
+              "add": "Добавить свойство",
+              "removePropertyTitle": "Удалить свойство"
             },
-            "useTemplate": "Использовать шаблон оценщика"
+            "useTemplate": "Использовать шаблон оценщика",
+            "useTemplateTooltip": "Применить схему по умолчанию для оценки в Judge Loop"
           }
         },
         "toolsSection": {

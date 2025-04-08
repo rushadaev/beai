@@ -3,11 +3,25 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useSafeTranslation } from '@/components/I18nProvider';
 
+interface AgentResponse {
+  response?: string;
+  content?: string;
+  iterations?: Array<{
+    content?: string;
+    generated_content?: string;
+    evaluation?: {
+      score: string;
+      feedback: string;
+    };
+  }>;
+  [key: string]: unknown;
+}
+
 interface AgentTestingSectionProps {
   chatbotId?: string;
   configSaved: boolean;
   hasUnsavedChanges: boolean;
-  testAgent: (message: string) => Promise<any>;
+  testAgent: (message: string) => Promise<string | AgentResponse>;
 }
 
 export default function AgentTestingSection({
@@ -20,7 +34,14 @@ export default function AgentTestingSection({
   const [userMessage, setUserMessage] = useState('');
   const [testResponse, setTestResponse] = useState<string | null>(null);
   const [traceVisible, setTraceVisible] = useState(false);
-  const [iterations, setIterations] = useState<any[]>([]);
+  const [iterations, setIterations] = useState<Array<{
+    content?: string;
+    generated_content?: string;
+    evaluation?: {
+      score: string;
+      feedback: string;
+    };
+  }>>([]);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

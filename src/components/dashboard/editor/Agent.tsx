@@ -123,7 +123,20 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
   workflow_type: "simple_router"
 };
 
-
+// Import or define the AgentResponse interface
+interface AgentResponse {
+  response?: string;
+  content?: string;
+  iterations?: Array<{
+    content?: string;
+    generated_content?: string;
+    evaluation?: {
+      score: string;
+      feedback: string;
+    };
+  }>;
+  [key: string]: unknown;
+}
 
 export default function Agent({ 
   initialConfig, 
@@ -136,7 +149,6 @@ export default function Agent({
   const { t } = useSafeTranslation();
   const [config, setConfig] = useState<AgentConfig>(initialConfig || DEFAULT_AGENT_CONFIG);
   const [activeAgent, setActiveAgent] = useState<string>(config.agents[0]?.id || "");
-  const [testResponse, setTestResponse] = useState("");
   const [configSaved, setConfigSaved] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -371,7 +383,7 @@ export default function Agent({
     }
   };
 
-  const testAgentHandler = async (message: string): Promise<any> => {
+  const testAgentHandler = async (message: string): Promise<string | AgentResponse> => {
     if (!chatbotId) {
       throw new Error("No chatbot ID available");
     }
@@ -558,16 +570,6 @@ export default function Agent({
           hasUnsavedChanges={hasUnsavedChanges}
           testAgent={testAgentHandler}
         />
-
-        {/* Display test response from parent state */}
-            {testResponse && (
-          <div className="rounded-md border border-border bg-dark p-3 text-sm text-primary">
-                <label className="block text-sm font-medium text-secondary mb-1">
-               {t('dashboard.editor.agent.testingSection.responseLabel')}
-                </label>
-                  {testResponse}
-          </div>
-        )}
         
         {/* API Endpoints Section - Replaced with component */}
         {configSaved && chatbotId && (

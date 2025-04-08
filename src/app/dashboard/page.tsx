@@ -86,7 +86,7 @@ export default function Dashboard() {
     }
     
     loadDashboardData();
-  }, [user]);
+  }, [user, fetchRecentConversations]);
   
   async function calculateDashboardStats(agentIds: string[], chatbots: Chatbot[]) {
     try {

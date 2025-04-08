@@ -3,6 +3,7 @@
 import { AgentDefinition, AgentConfig } from './Agent';
 import { useSafeTranslation } from '@/components/I18nProvider';
 import AgentToolsSection from './AgentToolsSection';
+import { OutputTypeSchema } from './OutputTypeConfig';
 import OutputTypeConfig from './OutputTypeConfig';
 
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
@@ -32,17 +33,25 @@ export default function ActiveAgentEditor({
 }: ActiveAgentEditorProps) {
   const { t } = useSafeTranslation();
   
-  // Check if this agent is an evaluator in a judge loop workflow
+  // Determine if this agent is currently assigned as the evaluator in Judge Loop settings
   const isEvaluator = config.workflow_type === 'judge_loop' && 
                       config.judge_loop_settings?.evaluator_agent_id === agent.id;
 
-  // Update the output_type for the agent
-  const handleOutputTypeUpdate = (outputType: any) => {
-    updateAgent(agent.id, { output_type: outputType });
+  // Handler to update the agent's output_type configuration
+  const handleOutputTypeUpdate = (outputType: OutputTypeSchema | undefined | null) => {
+    if (outputType === null || outputType === undefined) {
+      // When removing the output type, use null for Firebase compatibility
+      // Firebase doesn't accept undefined values but can handle null
+      updateAgent(agent.id, { output_type: null as unknown as OutputTypeSchema }); // Fixed: replaced 'any' with proper type
+    } else {
+      // Normal case - just update with the provided schema
+      updateAgent(agent.id, { output_type: outputType });
+    }
   };
   
   return (
     <div className="space-y-4">
+      {/* Agent Name & ID */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <input
@@ -56,6 +65,7 @@ export default function ActiveAgentEditor({
           </div>
         </div>
         
+        {/* Router Agent Checkbox & Delete Button */}
         <div className="flex items-center space-x-2">
           <label className="text-xs text-secondary">
             <input
@@ -82,6 +92,7 @@ export default function ActiveAgentEditor({
         </div>
       </div>
       
+      {/* Instructions */}
       <div>
         <label className="block text-sm font-medium text-secondary mb-1">
           {t('dashboard.editor.agent.agentsSection.instructionsLabel')}
@@ -94,6 +105,7 @@ export default function ActiveAgentEditor({
         />
       </div>
       
+      {/* Model Selection */}
       <div>
         <label className="block text-sm font-medium text-secondary mb-1">
           {t('dashboard.editor.agent.agentsSection.modelLabel')}
@@ -110,23 +122,22 @@ export default function ActiveAgentEditor({
         </select>
       </div>
       
-      {/* Show Output Type Config for evaluator agents */}
-      {isEvaluator && (
-        <div>
-          <label className="block text-sm font-medium text-secondary mb-1">
-            {t('dashboard.editor.agent.agentsSection.outputType.title')}
-          </label>
-          <p className="text-xs text-secondary mb-2">
-            {t('dashboard.editor.agent.agentsSection.outputType.description')}
-          </p>
-          <OutputTypeConfig 
-            outputType={agent.output_type}
-            onUpdate={handleOutputTypeUpdate}
-            isEvaluator={true}
-          />
-        </div>
-      )}
+      {/* Output Type Configuration (Always Shown) */}
+      <div>
+        <label className="block text-sm font-medium text-secondary mb-1">
+          {t('dashboard.editor.agent.agentsSection.outputType.title')}
+        </label>
+        <p className="text-xs text-secondary mb-2">
+          {t('dashboard.editor.agent.agentsSection.outputType.description')}
+        </p>
+        <OutputTypeConfig 
+          outputType={agent.output_type}
+          onUpdate={handleOutputTypeUpdate} 
+          isEvaluator={isEvaluator} // Pass flag to enable template button if applicable
+        />
+      </div>
       
+      {/* Handoff Description */}
       <div>
         <label className="block text-sm font-medium text-secondary mb-1">
           {t('dashboard.editor.agent.agentsSection.handoffDescriptionLabel')}
@@ -140,6 +151,7 @@ export default function ActiveAgentEditor({
         />
       </div>
       
+      {/* Available Handoffs */}
       <div>
         <label className="block text-sm font-medium text-secondary mb-1">
           {t('dashboard.editor.agent.agentsSection.availableHandoffsLabel')}
@@ -175,7 +187,7 @@ export default function ActiveAgentEditor({
         )}
       </div>
       
-      {/* Render Tools Section */}
+      {/* Agent Tools Section */}
       <AgentToolsSection 
         chatbotId={chatbotId}
         agent={agent}
