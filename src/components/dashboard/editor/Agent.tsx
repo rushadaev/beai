@@ -18,6 +18,13 @@ export interface AgentAttribute {
   default?: string;
 }
 
+export interface BuiltInTool {
+  type: 'built-in';
+  name: string; // e.g., 'file_search'
+  description?: string; // Optional description
+  vector_store_id?: string; // Specific to file_search
+}
+
 export interface AgentTool {
   name: string;
   description?: string;
@@ -47,7 +54,7 @@ export interface AgentDefinition {
   instructions: string;
   model?: string;
   handoff_description?: string;
-  tools: (string | AgentTool)[];
+  tools: (string | AgentTool | BuiltInTool)[];
   handoffs: string[];
 }
 
@@ -460,6 +467,7 @@ export default function Agent({
             <div className="space-y-4">
               {config.agents.filter(a => a.id === activeAgent).map((agent) => (
                 <ActiveAgentEditor
+                  chatbotId={chatbotId || ""}
                   key={agent.id}
                   agent={agent}
                   config={config}

@@ -295,7 +295,23 @@
           "editToolTitle": "Редактировать Инструмент",
           "removeToolTitle": "Удалить Инструмент",
           "parametersLabel": "Параметры",
-          "apiLabel": "API"
+          "apiLabel": "API",
+          "fileSearch": {
+            "vectorStoreIdLabel": "ID Векторного Хранилища",
+            "noVectorStoreId": "Векторное хранилище не связано",
+            "createVectorStoreButton": "Создать/Загрузить Файлы",
+            "updateVectorStoreButton": "Обновить/Перезагрузить Файлы",
+            "uploadingButton": "Загрузка...",
+            "noFilesSelected": "Файлы не выбраны.",
+            "uploading": "Загрузка файлов...",
+            "uploadSuccess": "Векторное хранилище успешно создано/обновлено.",
+            "uploadErrorGeneric": "Произошла ошибка во время загрузки файлов.",
+            "missingVectorStoreId": "Ответ API не содержит vector_store_id.",
+            "toolUpdateError": "Не удалось обновить конфигурацию инструмента после загрузки.",
+            "uploadErrorLabel": "Ошибка Загрузки"
+          },
+          "toolSelectionModal": {
+          }
         },
         "testingSection": {
           "title": "Тестирование Агента",

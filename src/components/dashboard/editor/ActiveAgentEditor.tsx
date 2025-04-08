@@ -7,6 +7,7 @@ import AgentToolsSection from './AgentToolsSection';
 const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
 
 interface ActiveAgentEditorProps {
+  chatbotId: string;
   agent: AgentDefinition;
   config: AgentConfig;
   updateAgent: (agentId: string, updates: Partial<AgentDefinition>) => void;
@@ -18,6 +19,7 @@ interface ActiveAgentEditorProps {
 }
 
 export default function ActiveAgentEditor({
+  chatbotId,
   agent,
   config,
   updateAgent,
@@ -148,10 +150,12 @@ export default function ActiveAgentEditor({
       
       {/* Render Tools Section */}
       <AgentToolsSection 
+        chatbotId={chatbotId}
         agent={agent}
         addTool={addTool}
         editTool={editTool}
         removeTool={removeTool}
+        onUpdateAgent={(updatedAgent) => updateAgent(updatedAgent.id, updatedAgent)}
       />
     </div>
   );

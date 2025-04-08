@@ -294,8 +294,25 @@
           "apiCallToolType": "API Call",
           "editToolTitle": "Edit Tool",
           "removeToolTitle": "Remove Tool",
-          "parametersLabel": "Parameters",
-          "apiLabel": "API"
+          "unknownToolType": "Unknown Tool",
+          "parametersLabel": "Params",
+          "apiLabel": "API",
+          "fileSearch": {
+            "vectorStoreIdLabel": "Vector Store ID",
+            "noVectorStoreId": "No vector store associated",
+            "createVectorStoreButton": "Create/Upload Files",
+            "updateVectorStoreButton": "Update/Re-upload Files",
+            "uploadingButton": "Uploading...",
+            "noFilesSelected": "No files selected.",
+            "uploading": "Uploading files...",
+            "uploadSuccess": "Vector Store created/updated successfully.",
+            "uploadErrorGeneric": "An error occurred during file upload.",
+            "missingVectorStoreId": "API response did not contain a vector_store_id.",
+            "toolUpdateError": "Could not update the tool configuration after upload.",
+            "uploadErrorLabel": "Upload Error"
+          },
+          "toolSelectionModal": {
+          }
         },
         "testingSection": {
           "title": "Agent Testing",
