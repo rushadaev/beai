@@ -312,7 +312,7 @@ export default function OutputTypeConfig({
                   <button
                     onClick={addProperty}
                     disabled={!propertyName}
-                    className="text-xs px-3 py-1 rounded bg-accent hover:bg-accent/80 text-white disabled:opacity-50"
+                    className="text-xs px-3 py-1 rounded bg-accent hover:bg-accent/80 text-dark disabled:opacity-50"
                   >
                     {t('dashboard.editor.agent.agentsSection.outputType.propertyForm.add')}
                   </button>
