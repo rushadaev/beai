@@ -1,23 +1,17 @@
+version: '3.8'
+
 services:
-  app:
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        # Pass build-time arguments. Docker Compose substitutes these variables
-        # using values from a .env file in the project root or host environment.
-        # If you want to use .env.production for these, run compose with:
-        # docker-compose --env-file .env.production build
-        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-        # Add other build arguments here if needed
-        # - ANOTHER_ENV_VAR=${ANOTHER_ENV_VAR}
+    container_name: beai-app
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    # Runtime environment variables are loaded from the specified env_file
     env_file:
       - .env.production
-    # You can still override or add specific variables here if needed
     environment:
-      NODE_ENV: production
-      # NEXT_PUBLIC_APP_URL will be loaded from .env.production via env_file
-      # ANOTHER_RUNTIME_ENV_VAR: some_value
+      - NODE_ENV=production
+    volumes:
+      - ./public:/app/public

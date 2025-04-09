@@ -1,0 +1,34 @@
+# Node modules
+node_modules
+
+# Next.js build output
+.next
+
+# Git files
+.git
+.gitignore
+
+# Environment files (except production)
+.env
+.env.local
+.env.development
+.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache directories
+.npm
+.eslintcache
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db 
