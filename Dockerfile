@@ -49,12 +49,12 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from the builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public # Copy public assets if needed
+#COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+#COPY --from=builder /app/node_modules ./node_modules
+#COPY --from=builder /app/package.json ./package.json
+#COPY --from=builder /app/public ./public # Copy public assets if needed
 # Copy next.config.ts if it exists and is needed at runtime
-COPY --from=builder /app/next.config.ts ./next.config.ts
+#COPY --from=builder /app/next.config.ts ./next.config.ts
 
 # Switch to the non-root user
 USER nextjs
