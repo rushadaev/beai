@@ -119,7 +119,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
     }
   ],
   router_agent_id: "main_assistant",
-  default_model: "gpt-4o-mini",
+  default_model: "gpt-4.1-mini",
   workflow_type: "simple_router"
 };
 

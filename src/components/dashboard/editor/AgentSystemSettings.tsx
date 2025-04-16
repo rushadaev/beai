@@ -5,7 +5,7 @@ import { useSafeTranslation } from '@/components/I18nProvider';
 import JudgeLoopConfig, { JudgeLoopSettings } from './JudgeLoopConfig';
 
 const VALID_TYPES = ["str", "int", "float", "bool", "list", "dict", "List[str]", "Dict[str, Any]"];
-const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
+const MODEL_OPTIONS = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"];
 const WORKFLOW_TYPES = ["simple_router", "judge_loop"];
 
 interface AgentSystemSettingsProps {

@@ -6,7 +6,7 @@ import AgentToolsSection from './AgentToolsSection';
 import { OutputTypeSchema } from './OutputTypeConfig';
 import OutputTypeConfig from './OutputTypeConfig';
 
-const MODEL_OPTIONS = ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet"];
+const MODEL_OPTIONS = ["gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"];
 
 interface ActiveAgentEditorProps {
   chatbotId: string;
