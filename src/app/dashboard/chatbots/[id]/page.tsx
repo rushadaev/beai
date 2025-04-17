@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ChatbotEditor from '@/components/dashboard/ChatbotEditor';
 import InstallModal from '@/components/dashboard/InstallModal';
-import { getChatbot, updateChatbot, updateChatbotSettings } from '@/lib/firebase/firestore';
+import { getChatbot, updateChatbot, updateChatbotSettings } from '@/lib/api';
 import Link from 'next/link';
 import { AppearanceSettings, Rule, Question } from '@/components/dashboard/ChatbotEditor';
 import { AgentConfig } from '@/components/dashboard/editor/Agent';

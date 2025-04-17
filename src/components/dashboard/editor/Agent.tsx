@@ -148,7 +148,7 @@ export default function Agent({
 }: AgentProps) {
   const { t } = useSafeTranslation();
   const [config, setConfig] = useState<AgentConfig>(initialConfig || DEFAULT_AGENT_CONFIG);
-  const [activeAgent, setActiveAgent] = useState<string>(config.agents[0]?.id || "");
+  const [activeAgent, setActiveAgent] = useState<string>(config?.agents[0]?.id || "");
   const [configSaved, setConfigSaved] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -357,7 +357,7 @@ export default function Agent({
     try {
       // Register agent with API
       if (chatbotId) {
-        const response = await fetch(`${apiBaseUrl}/api/agents/${chatbotId}`, {
+        const response = await fetch(`${apiBaseUrl}/api/chatbots/${chatbotId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -390,7 +390,7 @@ export default function Agent({
     
     setHasUnsavedChanges(false); // Reset the unsaved changes flag for testing
     
-    const endpoint = `${apiBaseUrl}/api/agents/${chatbotId}/message`;
+    const endpoint = `${apiBaseUrl}/api/chatbots/${chatbotId}/message`;
     const payload = {
       message,
       context: {} // You can add context data here if needed

@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useSafeTranslation } from '@/components/I18nProvider';
 import { useAuth } from '@/lib/context/AuthContext';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { getUserChatbots, getChatHistory } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
@@ -13,15 +12,15 @@ interface ChatMessage {
   agent_id: string;
   message: string;
   response: string;
-  timestamp: Timestamp;
+  timestamp: string | Date;
 }
 
 interface Chatbot {
   id: string;
   name: string;
   userId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface TopQuestion {
@@ -60,23 +59,20 @@ export default function InsightsPage() {
         // Get the date range based on selected time range
         const { startDate, endDate } = getDateRange(timeRange);
         
-        // Fetch messages within the selected time range
-        const chatHistoryQuery = query(
-          collection(db, 'chat_history'),
-          where('agent_id', 'in', agentIds),
-          where('timestamp', '>=', startDate),
-          where('timestamp', '<=', endDate),
-          orderBy('timestamp', 'asc')
-        );
+        // Fetch messages using our API client
+        // Note: The API client will need to handle filtering by date range
+        const chatMessages = await getChatHistory(agentIds, 1000); // Use a large limit to get all messages
         
-        const chatHistorySnapshot = await getDocs(chatHistoryQuery);
-        const chatMessages = chatHistorySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as ChatMessage));
+        // Filter messages by date locally
+        const filteredMessages = chatMessages.filter((message: ChatMessage) => {
+          const messageDate = typeof message.timestamp === 'string' 
+            ? new Date(message.timestamp) 
+            : message.timestamp;
+          return messageDate >= startDate && messageDate <= endDate;
+        });
         
         // Process the data to generate insights
-        processInsightsData(chatMessages, timeRange);
+        processInsightsData(filteredMessages, timeRange);
         
       } catch (error) {
         console.error('Error fetching chat history:', error);
@@ -125,7 +121,17 @@ export default function InsightsPage() {
         
         const firstMsg = convoMessages[0];
         const lastMsg = convoMessages[convoMessages.length - 1];
-        const durationMs = lastMsg.timestamp.toMillis() - firstMsg.timestamp.toMillis();
+        
+        const firstTimestamp = typeof firstMsg.timestamp === 'string' 
+          ? new Date(firstMsg.timestamp) 
+          : firstMsg.timestamp;
+          
+        const lastTimestamp = typeof lastMsg.timestamp === 'string' 
+          ? new Date(lastMsg.timestamp) 
+          : lastMsg.timestamp;
+          
+        // Using Date.getTime() instead of toMillis()
+        const durationMs = lastTimestamp.getTime() - firstTimestamp.getTime();
         totalDuration += durationMs;
       });
       
@@ -174,24 +180,15 @@ export default function InsightsPage() {
       setLoading(true);
       
       try {
-        // 1. First, fetch user's chatbots to get agent IDs
-        const chatbotsQuery = query(
-          collection(db, 'chatbots'),
-          where('userId', '==', user.uid)
-        );
-        
-        const chatbotsSnapshot = await getDocs(chatbotsQuery);
-        const chatbotsList = chatbotsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Chatbot));
+        // 1. Fetch user's chatbots using the API client
+        const chatbotsList = await getUserChatbots(user.uid);
         
         if (chatbotsList.length === 0) {
           setLoading(false);
           return;
         }
         
-        const agentIds = chatbotsList.map(chatbot => chatbot.id);
+        const agentIds = chatbotsList.map((chatbot: Chatbot) => chatbot.id);
         
         // 2. Fetch chat history for all agents
         await fetchChatHistory(agentIds);
@@ -204,35 +201,28 @@ export default function InsightsPage() {
     }
     
     fetchInsightsData();
-  }, [user, timeRange]); // Dependencies: user and timeRange
+  }, [user, timeRange]);
   
   function getDateRange(range: 'day' | 'week' | 'month' | 'year') {
-    const now = new Date();
-    let startDate: Date;
+    const endDate = new Date();
+    let startDate = new Date();
     
     switch (range) {
       case 'day':
-        startDate = new Date(now);
         startDate.setHours(0, 0, 0, 0);
         break;
       case 'week':
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - 7);
+        startDate.setDate(startDate.getDate() - 7);
         break;
       case 'month':
-        startDate = new Date(now);
-        startDate.setMonth(now.getMonth() - 1);
+        startDate.setMonth(startDate.getMonth() - 1);
         break;
       case 'year':
-        startDate = new Date(now);
-        startDate.setFullYear(now.getFullYear() - 1);
+        startDate.setFullYear(startDate.getFullYear() - 1);
         break;
     }
     
-    return {
-      startDate: Timestamp.fromDate(startDate),
-      endDate: Timestamp.fromDate(now)
-    };
+    return { startDate, endDate };
   }
   
   function generateConversationVolumeData(messages: ChatMessage[], range: 'day' | 'week' | 'month' | 'year'): number[] {
@@ -247,7 +237,10 @@ export default function InsightsPage() {
     
     // Group messages by day/period
     messages.forEach(message => {
-      const messageDate = message.timestamp.toDate();
+      const messageDate = typeof message.timestamp === 'string' 
+        ? new Date(message.timestamp) 
+        : message.timestamp;
+      
       let index = 0;
       
       switch (range) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/context/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { getUserChatbots, createChatbot, deleteChatbot } from '@/lib/firebase/firestore';
+import { getUserChatbots, createChatbot, deleteChatbot } from '@/lib/api';
 import { useSafeTranslation } from '@/components/I18nProvider';
 
 interface Chatbot {
@@ -121,14 +121,15 @@ export default function ChatbotsPage() {
   };
 
   // Format a date for display
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    }).format(date);
+    }).format(dateObj);
   };
 
   return (

@@ -5,8 +5,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import Link from 'next/link';
 import { useSafeTranslation } from '@/components/I18nProvider';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { getUserChatbots, getChatHistory } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
@@ -14,22 +13,22 @@ interface ChatMessage {
   agent_id: string;
   message: string;
   response: string;
-  timestamp: Timestamp;
+  timestamp: string | Date;
 }
 
 interface Chatbot {
   id: string;
   name: string;
   userId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ConversationPreview {
   id: string;
   user_id: string;
   agentName: string;
-  timestamp: Timestamp;
+  timestamp: Date;
   messageCount: number;
   relativeTime: string;
 }
@@ -56,20 +55,10 @@ export default function Dashboard() {
       if (!user?.uid) return;
       
       try {
-        // Fetch user's chatbots
-        const chatbotsQuery = query(
-          collection(db, 'chatbots'),
-          where('userId', '==', user.uid)
-        );
-        
-        const chatbotsSnapshot = await getDocs(chatbotsQuery);
-        const chatbotsList = chatbotsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Chatbot));
-        
+        // Fetch user's chatbots using API client
+        const chatbotsList = await getUserChatbots(user.uid);
         // Get agent IDs for querying chat history
-        const agentIds = chatbotsList.map(chatbot => chatbot.id);
+        const agentIds = chatbotsList.map((chatbot: Chatbot) => chatbot.id);
         
         // Calculate dashboard statistics
         if (agentIds.length > 0) {
@@ -86,25 +75,16 @@ export default function Dashboard() {
     }
     
     loadDashboardData();
-  }, [user, fetchRecentConversations]);
+  }, [user]);
   
   async function calculateDashboardStats(agentIds: string[], chatbots: Chatbot[]) {
     try {
-      // Query to get all chat messages for the user's chatbots
-      const chatHistoryQuery = query(
-        collection(db, 'chat_history'),
-        where('agent_id', 'in', agentIds)
-      );
-      
-      const chatHistorySnapshot = await getDocs(chatHistoryQuery);
-      const chatMessages = chatHistorySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as ChatMessage));
+      // Get chat messages using API client
+      const chatMessages = await getChatHistory(agentIds);
       
       // Group by user_id and agent_id to count unique conversations
       const conversationMap = new Map<string, ChatMessage[]>();
-      chatMessages.forEach(message => {
+      chatMessages.forEach((message: ChatMessage) => {
         const key = `${message.user_id}_${message.agent_id}`;
         if (!conversationMap.has(key)) {
           conversationMap.set(key, []);
@@ -133,23 +113,12 @@ export default function Dashboard() {
   
   async function fetchRecentConversations(agentIds: string[], chatbots: Chatbot[]) {
     try {
-      // Create a query to get recent messages
-      const recentMessagesQuery = query(
-        collection(db, 'chat_history'),
-        where('agent_id', 'in', agentIds),
-        orderBy('timestamp', 'desc'),
-        limit(30) // Get more than we need to ensure we have enough unique conversations
-      );
-      
-      const messagesSnapshot = await getDocs(recentMessagesQuery);
-      const recentMessages = messagesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as ChatMessage));
+      // Get recent messages using API client
+      const recentMessages = await getChatHistory(agentIds, 30);
       
       // Group by user_id and agent_id to identify unique conversations
       const conversationMap = new Map<string, ChatMessage[]>();
-      recentMessages.forEach(message => {
+      recentMessages.forEach((message: ChatMessage) => {
         const key = `${message.user_id}_${message.agent_id}`;
         if (!conversationMap.has(key)) {
           conversationMap.set(key, []);
@@ -162,19 +131,24 @@ export default function Dashboard() {
       
       conversationMap.forEach((messages, key) => {
         // Sort messages by timestamp
-        const sortedMessages = messages.sort((a, b) => 
-          a.timestamp.toMillis() - b.timestamp.toMillis()
-        );
+        const sortedMessages = messages.sort((a, b) => {
+          const dateA = typeof a.timestamp === 'string' ? new Date(a.timestamp) : a.timestamp;
+          const dateB = typeof b.timestamp === 'string' ? new Date(b.timestamp) : b.timestamp;
+          return dateA.getTime() - dateB.getTime();
+        });
         
         const [user_id, agent_id] = key.split('_');
         const chatbot = chatbots.find(bot => bot.id === agent_id);
         
         if (sortedMessages.length > 0 && chatbot) {
-          // Get most recent message timestamp
-          const latestTimestamp = sortedMessages[sortedMessages.length - 1].timestamp;
+          // Get most recent message timestamp and convert to Date if needed
+          const latestMessage = sortedMessages[sortedMessages.length - 1];
+          const latestTimestamp = typeof latestMessage.timestamp === 'string' 
+            ? new Date(latestMessage.timestamp) 
+            : latestMessage.timestamp;
           
           // Generate relative time string (e.g., "2 hours ago")
-          const relativeTime = getRelativeTimeString(latestTimestamp.toDate());
+          const relativeTime = getRelativeTimeString(latestTimestamp);
           
           conversationPreviews.push({
             id: key,
@@ -189,7 +163,7 @@ export default function Dashboard() {
       
       // Get the 3 most recent unique conversations
       const sortedPreviews = conversationPreviews
-        .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
         .slice(0, 3);
       
       setRecentConversations(sortedPreviews);
@@ -221,9 +195,11 @@ export default function Dashboard() {
     });
   }
   
-  function getRelativeTimeString(date: Date): string {
+  function getRelativeTimeString(date: string | Date): string {
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    // Convert to Date object if it's a string
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const diffMs = now.getTime() - dateObj.getTime();
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);

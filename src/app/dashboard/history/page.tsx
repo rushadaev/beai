@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useSafeTranslation } from '@/components/I18nProvider';
 import { useAuth } from '@/lib/context/AuthContext';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { getUserChatbots, getChatHistory } from '@/lib/api';
 
 interface ChatMessage {
   id: string;
@@ -13,15 +12,15 @@ interface ChatMessage {
   agent_id: string;
   message: string;
   response: string;
-  timestamp: Timestamp;
+  timestamp: string | Date;
 }
 
 interface Chatbot {
   id: string;
   name: string;
   userId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ConversationGroup {
@@ -30,7 +29,7 @@ interface ConversationGroup {
   agent_id: string;
   agentName: string;
   messages: ChatMessage[];
-  startTime: Timestamp;
+  startTime: Date;
   duration: string;
   status: 'completed' | 'abandoned';
 }
@@ -45,20 +44,12 @@ export default function HistoryPage() {
   
   // Fetch user's chatbots and history
   useEffect(() => {
-    async function fetchChatbots() {
+    async function fetchData() {
       if (!user?.uid) return;
       
       try {
-        const chatbotsQuery = query(
-          collection(db, 'chatbots'),
-          where('userId', '==', user.uid)
-        );
-        
-        const chatbotsSnapshot = await getDocs(chatbotsQuery);
-        const chatbotsList = chatbotsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as Chatbot));
+        // Use API client to get user's chatbots
+        const chatbotsList = await getUserChatbots(user.uid);
         
         // After fetching chatbots, fetch chat history
         if (chatbotsList.length > 0) {
@@ -72,32 +63,21 @@ export default function HistoryPage() {
       }
     }
     
-    fetchChatbots();
+    fetchData();
   }, [user]);
   
   // Fetch chat history for the user's chatbots
   async function fetchChatHistory(userChatbots: Chatbot[]) {
     try {
-      const agentIds = userChatbots.map(chatbot => chatbot.id);
+      const agentIds = userChatbots.map((chatbot: Chatbot) => chatbot.id);
       
-      // Create a query to get all chat messages for the user's chatbots
-      const chatHistoryQuery = query(
-        collection(db, 'chat_history'),
-        where('agent_id', 'in', agentIds),
-        orderBy('timestamp', 'desc'),
-        limit(100) // Limit to recent conversations
-      );
-      
-      const chatHistorySnapshot = await getDocs(chatHistoryQuery);
-      const chatMessages = chatHistorySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as ChatMessage));
+      // Use API client to get chat history
+      const chatMessages = await getChatHistory(agentIds, 100);
       
       // Group messages by user_id and agent_id to form conversations
       const conversationMap = new Map<string, ChatMessage[]>();
       
-      chatMessages.forEach(message => {
+      chatMessages.forEach((message: ChatMessage) => {
         const key = `${message.user_id}_${message.agent_id}`;
         if (!conversationMap.has(key)) {
           conversationMap.set(key, []);
@@ -110,25 +90,35 @@ export default function HistoryPage() {
       
       conversationMap.forEach((messages, key) => {
         // Sort messages by timestamp
-        const sortedMessages = messages.sort((a, b) => 
-          a.timestamp.toMillis() - b.timestamp.toMillis()
-        );
+        const sortedMessages = messages.sort((a, b) => {
+          const dateA = typeof a.timestamp === 'string' ? new Date(a.timestamp) : a.timestamp;
+          const dateB = typeof b.timestamp === 'string' ? new Date(b.timestamp) : b.timestamp;
+          return dateA.getTime() - dateB.getTime();
+        });
         
         const [user_id, agent_id] = key.split('_');
         const chatbot = userChatbots.find(bot => bot.id === agent_id);
         
         if (sortedMessages.length > 0 && chatbot) {
           // Calculate conversation duration
-          const startTime = sortedMessages[0].timestamp;
-          const endTime = sortedMessages[sortedMessages.length - 1].timestamp;
-          const durationMs = endTime.toMillis() - startTime.toMillis();
+          const firstMessage = sortedMessages[0];
+          const lastMessage = sortedMessages[sortedMessages.length - 1];
+          
+          const startTime = typeof firstMessage.timestamp === 'string' 
+            ? new Date(firstMessage.timestamp) 
+            : firstMessage.timestamp;
+          
+          const endTime = typeof lastMessage.timestamp === 'string' 
+            ? new Date(lastMessage.timestamp) 
+            : lastMessage.timestamp;
+          
+          const durationMs = endTime.getTime() - startTime.getTime();
           const durationMinutes = Math.floor(durationMs / 60000);
           const durationSeconds = Math.floor((durationMs % 60000) / 1000);
           const duration = `${durationMinutes}m ${durationSeconds}s`;
           
           // Determine if conversation is completed or abandoned
           // If last message is from user with no response, it's abandoned
-          const lastMessage = sortedMessages[sortedMessages.length - 1];
           const status = lastMessage.response ? 'completed' : 'abandoned';
           
           conversationGroups.push({
@@ -146,7 +136,7 @@ export default function HistoryPage() {
       
       // Sort conversations by start time (newest first)
       const sortedConversations = conversationGroups.sort((a, b) => 
-        b.startTime.toMillis() - a.startTime.toMillis()
+        b.startTime.getTime() - a.startTime.getTime()
       );
       
       setConversations(sortedConversations);
@@ -265,7 +255,7 @@ export default function HistoryPage() {
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-primary">{conversation.user_id}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-secondary">
-                        {conversation.startTime.toDate().toLocaleString('en-US', {
+                        {conversation.startTime.toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           hour: 'numeric',
@@ -346,7 +336,7 @@ export default function HistoryPage() {
             
             <div className="mb-4 flex flex-wrap gap-3 text-sm">
               <div className="rounded-full bg-dark px-3 py-1 text-secondary">
-                <span className="font-medium text-primary">{t('dashboard.history.preview.startedLabel')}:</span> {selectedConversation.startTime.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                <span className="font-medium text-primary">{t('dashboard.history.preview.startedLabel')}:</span> {selectedConversation.startTime.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
               </div>
               <div className="rounded-full bg-dark px-3 py-1 text-secondary">
                 <span className="font-medium text-primary">{t('dashboard.history.preview.durationLabel')}:</span> {selectedConversation.duration}
@@ -368,7 +358,10 @@ export default function HistoryPage() {
                   {/* User message */}
                   <div className="mb-3">
                     <div className="mb-1 text-secondary">
-                      {t('dashboard.history.preview.message.user')} - {msg.timestamp.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      {t('dashboard.history.preview.message.user')} - {
+                        (typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp)
+                          .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                      }
                     </div>
                     <div className="rounded-lg bg-card px-4 py-3 text-primary">
                       {msg.message}
@@ -379,7 +372,10 @@ export default function HistoryPage() {
                   {msg.response && (
                     <div className="mb-3">
                       <div className="mb-1 text-secondary">
-                        {t('dashboard.history.preview.message.bot')} - {msg.timestamp.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        {t('dashboard.history.preview.message.bot')} - {
+                          (typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp)
+                            .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                        }
                       </div>
                       <div className="rounded-lg border border-border bg-dark px-4 py-3 text-primary">
                         {msg.response}

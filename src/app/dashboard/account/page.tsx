@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { getUserData, updateUserProfile, updateUserPreferences } from '@/lib/firebase/firestore';
+import { getUserData, updateUserProfile, updateUserPreferences } from '@/lib/api';
 import { updateUserPassword, logoutAllDevices } from '@/lib/firebase/auth';
 import { useSafeTranslation } from '@/components/I18nProvider';
 

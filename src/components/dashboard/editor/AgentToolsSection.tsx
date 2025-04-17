@@ -87,7 +87,7 @@ export default function AgentToolsSection({
     }
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/agents/${chatbotId}/files`, {
+      const response = await fetch(`${apiBaseUrl}/api/chatbots/${chatbotId}/files`, {
         method: 'POST',
         body: formData,
         // Add headers if needed, e.g., for authentication
