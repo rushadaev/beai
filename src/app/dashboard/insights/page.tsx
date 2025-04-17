@@ -205,7 +205,7 @@ export default function InsightsPage() {
   
   function getDateRange(range: 'day' | 'week' | 'month' | 'year') {
     const endDate = new Date();
-    let startDate = new Date();
+    const startDate = new Date();
     
     switch (range) {
       case 'day':
