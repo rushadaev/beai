@@ -1,7 +1,7 @@
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { app } from './config';
 // Import from our API client instead of Firestore
-import { getUserData, updateUserProfile } from '../api';
+import { getUserData, updateUserProfile, createUserProfile } from '../api';
 
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
@@ -14,6 +14,27 @@ export const login = async (email, password) => {
     // Store the authentication token in localStorage for API requests
     const token = await userCredential.user.getIdToken();
     localStorage.setItem('authToken', token);
+
+    // Check if user profile exists, create if not
+    if (userCredential.user) {
+      try {
+        const userData = await getUserData(userCredential.user.uid);
+        
+        if (!userData) {  
+          const newUserData = {
+            id: userCredential.user.uid,
+            email: userCredential.user.email,
+            firstName: '',
+            lastName: '',
+            companyName: '',
+            displayName: userCredential.user.displayName || ''  
+          };
+          await createUserProfile(newUserData);
+        }
+      } catch (error) {
+        console.error('Error fetching/creating user profile:', error);
+      } 
+    }
     
     return { user: userCredential.user, error: null };
   } catch (error) {
@@ -85,6 +106,15 @@ export const signInWithGoogle = async () => {
       } catch (apiError) {
         console.error('Error checking/initializing user profile:', apiError);
         // Continue even if API fails
+        const newUserData = {
+          id: user.uid,
+          email: user.email,
+          firstName: '',
+          lastName: '',
+          companyName: '',
+          displayName: user.displayName || ''
+        };
+        await createUserProfile(newUserData);
       }
     }
     

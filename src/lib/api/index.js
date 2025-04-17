@@ -124,6 +124,18 @@ export async function updateUserProfile(uid, profileData) {
 }
 
 /**
+ * Create user profile
+ */
+export async function createUserProfile(profileData) {
+  try {
+    return await apiClient.post(`/users`, profileData);
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    throw error;
+  }
+}
+
+/**
  * Update user preferences
  */
 export async function updateUserPreferences(uid, preferences) {
